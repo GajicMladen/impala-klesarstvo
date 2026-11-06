@@ -1,10 +1,15 @@
+import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { track } from '../lib/analytics'
 import { Configurator } from '../components/configurator/Configurator'
 import { SectionHead } from '../components/SectionHead'
 
 export function ConfiguratorPage() {
   const [params] = useSearchParams()
   const kamen = params.get('kamen') ?? undefined
+  useEffect(() => {
+    track('configurator_open', { material: kamen ?? '' })
+  }, [kamen])
   return (
     <section className="pb-24 pt-28 md:pb-32 md:pt-40">
       <div className="mx-auto max-w-7xl px-5 md:px-8">

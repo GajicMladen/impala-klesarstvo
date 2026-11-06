@@ -7,10 +7,26 @@ import { MaterialModal } from './components/MaterialModal'
 import { HomePage } from './pages/HomePage'
 import { MaterialsPage } from './pages/MaterialsPage'
 import { ConfiguratorPage } from './pages/ConfiguratorPage'
+import { AnalyticsPage } from './pages/AnalyticsPage'
+import { track } from './lib/analytics'
 
-/** Scrolls to the top on route change, or to the #hash target when one is given. */
+/** Scrolls to the top on route change (or to the #hash target), records page views and phone / WhatsApp clicks. */
 function ScrollManager() {
   const { pathname, hash } = useLocation()
+  useEffect(() => {
+    if (!pathname.startsWith('/analitika')) track('page_view')
+  }, [pathname])
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null
+      if (!a || a.closest('[role="dialog"]')) return
+      const href = a.getAttribute('href') || ''
+      if (href.startsWith('tel:')) track('phone_click', { number: href.slice(4) })
+      else if (href.includes('wa.me')) track('whatsapp_click')
+    }
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
+  }, [])
   useEffect(() => {
     if (hash) {
       const id = hash.slice(1)
@@ -26,6 +42,10 @@ export default function App() {
   const [selected, setSelected] = useState<Material | null>(null)
   const navigate = useNavigate()
 
+  const openMaterial = useCallback((m: Material) => {
+    setSelected(m)
+    track('material_open', { material: m.name })
+  }, [])
   const close = useCallback(() => setSelected(null), [])
   const useInConfigurator = useCallback(
     (m: Material) => {
@@ -41,10 +61,11 @@ export default function App() {
       <Nav />
       <main>
         <Routes>
-          <Route path="/" element={<HomePage onOpenMaterial={setSelected} />} />
-          <Route path="/materijali" element={<MaterialsPage onOpenMaterial={setSelected} />} />
+          <Route path="/" element={<HomePage onOpenMaterial={openMaterial} />} />
+          <Route path="/materijali" element={<MaterialsPage onOpenMaterial={openMaterial} />} />
           <Route path="/konfigurator" element={<ConfiguratorPage />} />
-          <Route path="*" element={<HomePage onOpenMaterial={setSelected} />} />
+          <Route path="/analitika" element={<AnalyticsPage />} />
+          <Route path="*" element={<HomePage onOpenMaterial={openMaterial} />} />
         </Routes>
       </main>
       <Footer />

@@ -70,6 +70,12 @@ WhatsApp linkovi (`wa.me`) primaju samo tekst, pa prilog ide na jedan od dva na�
 1. **Bez backend-a (podrazumevano)** – postupak u dva koraka u prozoru „Pošalji upit“: (1) `wa.me` link otvara razgovor sa brojem radionice i upisuje tekst upita (broj ne mora biti sačuvan), (2) „Podijeli skicu“ otvara sistemski meni (telefon) gde je taj razgovor na vrhu liste, ili kopira/preuzima PNG (računar) za lepljenje u razgovor. Tu je i „Spremi kontakt radionice“ (`public/impala-klesarstvo.vcf`).
 2. **Automatski** – ako je u `.env` postavljen `VITE_IMGBB_KEY` (besplatan ključ sa api.imgbb.com), skica se uploaduje i WhatsApp se otvara sa tekstom i linkom na sliku, broj je već upisan. Ključ se ugrađuje u bundle, pa je javan; za produkciju je bolje upload preko sopstvenog backenda (Supabase/Cloudinary).
 
+## Interna analitika
+
+Sajt beleži događaje (`page_view`, `material_open`, `configurator_open`, `sketch_downloaded`, `sketch_shared`, `inquiry_sent`, `phone_click`, `whatsapp_click`) bez kolačića i bez trećih strana, u **vašu Google tabelu** preko Apps Script skripte [analytics/Code.gs](analytics/Code.gs). Pregled je na skrivenoj stranici **`/analitika`** (zaštićena tokenom): posete i upiti po danu, konverzija, uređaji, top stranice, materijali i izvori prometa, plus tabelarni prikaz.
+
+Postavljanje (5 minuta): nova Google tabela → Proširenja → Apps Script → zalepi `analytics/Code.gs` → Svojstva skripte `TOKEN` (lozinka za čitanje) i opcionalno `KEY` → Implementiraj kao web-aplikaciju (Izvrši kao: ja, Pristup: svi) → URL u `.env` kao `VITE_ANALYTICS_ENDPOINT` (+ `VITE_ANALYTICS_KEY`) → `npm run deploy`. Dok endpoint nije podešen, sajt ne šalje ništa, a `/analitika` prikazuje uputstvo.
+
 ## Deploy (GitHub Pages)
 
 ```bash

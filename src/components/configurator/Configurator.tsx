@@ -5,6 +5,7 @@ import { useTexture } from '../../lib/useTexture'
 import { paletteLightness } from '../../lib/textures'
 import { StoneTile } from '../StoneTile'
 import { asset } from '../../lib/asset'
+import { track } from '../../lib/analytics'
 import {
   SHAPES,
   DECORS,
@@ -457,6 +458,18 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
     }
   }
 
+  const inquiryProps = () => ({
+    shape: S.label,
+    material: mat.name,
+    base: baseMat.name,
+    width,
+    height,
+    elements: elems.length,
+    photos: photos.length,
+    strokes: strokes.length,
+    price,
+  })
+
   const sketchFileName = () => `impala-skica-${texts.find((t) => t.role === 'prezime')?.text.toLowerCase().replace(/[^a-z0-9ćčšžđ]+/gi, '-') || 'spomenik'}.png`
 
   /** Renders the current sketch to a PNG blob (1800 × 1350). */
@@ -490,6 +503,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
   const exportPng = async () => {
     try {
       downloadBlob(await renderPng())
+      track('sketch_downloaded', inquiryProps())
       toast('Skica preuzeta kao PNG.')
     } catch {
       toast('Skicu nije bilo moguće izraditi.')
@@ -525,6 +539,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
       try {
         await navigator.share({ files: [file], title: 'Skica spomenika – Impala Klesarstvo' })
         setStep(2)
+        track('sketch_shared', { via: 'share', ...inquiryProps() })
         toast('Skica podijeljena.')
         return
       } catch (err) {
@@ -533,6 +548,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
     }
     downloadBlob(blob)
     setStep(2)
+    track('sketch_shared', { via: copied ? 'clipboard' : 'download', ...inquiryProps() })
     toast(copied ? 'Skica kopirana i preuzeta – zalijepite je u WhatsApp razgovor.' : 'Skica preuzeta – priložite je u WhatsApp razgovoru.')
   }
 
@@ -554,6 +570,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
       const href = `https://wa.me/${PHONE}?text=${encodeURIComponent(`${summary}\n\nSkica: ${link}`)}`
       if (win) win.location.href = href
       else window.open(href, '_blank', 'noopener')
+      track('inquiry_sent', { via: 'upload', ...inquiryProps() })
       toast('Skica poslana – otvara se WhatsApp s upitom i poveznicom na skicu.')
       setShowSummary(false)
     } catch {
@@ -1199,7 +1216,10 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                         href={waHref}
                         target="_blank"
                         rel="noreferrer"
-                        onClick={() => setStep((s) => Math.max(s, 1))}
+                        onClick={() => {
+                          setStep((s) => Math.max(s, 1))
+                          track('inquiry_sent', { via: 'whatsapp', ...inquiryProps() })
+                        }}
                         className="mt-3 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-sm font-medium text-ink transition hover:bg-paper"
                       >
                         Otvori WhatsApp s upitom
