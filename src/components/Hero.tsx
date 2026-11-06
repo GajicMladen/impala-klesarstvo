@@ -12,6 +12,12 @@ const cutouts = [
   { src: '/hero/spomenik-andjeo.png', alt: 'Spomenik s anđelom od bijelog mramora', className: 'right-0 -top-[3%] w-[40%]', delay: 0.65 },
 ]
 
+const stacked = [
+  { src: '/hero/spomenik-srce.png', alt: 'Spomenik u obliku srca s klesanom ružom', className: 'w-[72%] self-start' },
+  { src: '/hero/spomenik-andjeo.png', alt: 'Spomenik s anđelom od bijelog mramora', className: 'w-[60%] self-end' },
+  { src: '/hero/grobnica.png', alt: 'Obiteljska grobnica od crnog i crvenog granita', className: 'w-[94%] self-center' },
+]
+
 export function Hero() {
   const impala = byId('impala')!
   const tex = useTexture(impala)
@@ -85,7 +91,8 @@ export function Hero() {
             </motion.div>
           </div>
 
-          <div className="relative h-[250px] sm:h-[340px] lg:h-[520px]" aria-hidden="true">
+          {/* desktop: collage */}
+          <div className="relative hidden h-[520px] lg:block" aria-hidden="true">
             {cutouts.map((p) => (
               <motion.img
                 key={p.src}
@@ -95,6 +102,22 @@ export function Hero() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: p.delay, ease: [0.22, 1, 0.36, 1] }}
                 className={`absolute ${p.className} drop-shadow-[0_30px_35px_rgba(0,0,0,0.75)]`}
+                loading="eager"
+              />
+            ))}
+          </div>
+          {/* mobile / tablet: stacked, sliding in alternately from left and right */}
+          <div className="flex flex-col gap-8 lg:hidden" aria-hidden="true">
+            {stacked.map((p, i) => (
+              <motion.img
+                key={p.src}
+                src={asset(p.src)}
+                alt={p.alt}
+                initial={{ opacity: 0, x: i % 2 === 0 ? -90 : 90 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                className={`${p.className} drop-shadow-[0_24px_30px_rgba(0,0,0,0.75)]`}
                 loading="eager"
               />
             ))}

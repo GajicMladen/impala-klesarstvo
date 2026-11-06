@@ -155,6 +155,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
   const [copied, setCopied] = useState(false)
 
   const svgRef = useRef<SVGSVGElement>(null)
+  const sketchRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<Drag | null>(null)
   const drawRef = useRef<number[] | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -174,8 +175,11 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
   const light = paletteLightness(mat.texture) > 0.5
   const inkHex = INKS.find((i) => i.id === ink)!.hex
   const fontFamily = FONTS.find((f) => f.id === font)!.family
-  const sx = width / 90
-  const sy = height / 90
+  // the sketch shows only the proportions of the plate (width : height), always fitted inside the frame
+  const aspect = width / height
+  const fit = Math.min(1, 215 / (S.half * Math.sqrt(aspect)), 1.1 * Math.sqrt(aspect))
+  const sx = Math.sqrt(aspect) * fit
+  const sy = fit / Math.sqrt(aspect)
   const halfPlate = S.half * sx
   const halfPlinth = halfPlate + 18
   const halfSlab = Math.max(halfPlinth + 50, 220)
@@ -252,6 +256,16 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
     setMode('select')
     toast('Skica vraćena na početne postavke.')
   }
+
+  /* any interaction outside the sketch column ends drawing mode */
+  useEffect(() => {
+    if (mode !== 'draw') return
+    const onDown = (e: PointerEvent) => {
+      if (!sketchRef.current?.contains(e.target as Node)) setMode('select')
+    }
+    document.addEventListener('pointerdown', onDown, true)
+    return () => document.removeEventListener('pointerdown', onDown, true)
+  }, [mode])
 
   /* ---------- keyboard ---------- */
   useEffect(() => {
@@ -540,7 +554,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
 
       <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:gap-10">
         {/* ---------- sketch (sticky) ---------- */}
-        <div className="sticky top-[76px] z-30 min-w-0 self-start bg-ink pb-3 md:top-24">
+        <div ref={sketchRef} className="sticky top-[76px] z-30 min-w-0 self-start bg-ink pb-3 md:top-24">
           <div className="relative overflow-hidden border-y border-line bg-ink md:rounded-3xl md:border">
             <svg
               ref={svgRef}
@@ -636,20 +650,6 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                 />
               )}
 
-              <g stroke="#3ea36f" strokeWidth="1" fill="#3ea36f" fontSize="11" opacity="0.9" pointerEvents="none">
-                <line x1={300 - halfPlate - 26} y1={330 - 270 * sy} x2={300 - halfPlate - 26} y2="330" />
-                <line x1={300 - halfPlate - 32} y1={330 - 270 * sy} x2={300 - halfPlate - 20} y2={330 - 270 * sy} />
-                <line x1={300 - halfPlate - 32} y1="330" x2={300 - halfPlate - 20} y2="330" />
-                <text x={300 - halfPlate - 34} y={330 - 135 * sy} textAnchor="middle" stroke="none" transform={`rotate(-90 ${300 - halfPlate - 34} ${330 - 135 * sy})`}>
-                  {height} cm
-                </text>
-                <line x1={300 - halfPlate} y1="420" x2={300 + halfPlate} y2="420" />
-                <line x1={300 - halfPlate} y1="414" x2={300 - halfPlate} y2="426" />
-                <line x1={300 + halfPlate} y1="414" x2={300 + halfPlate} y2="426" />
-                <text x="300" y="438" textAnchor="middle" stroke="none">
-                  {width} cm
-                </text>
-              </g>
             </svg>
 
             {mode === 'draw' && (
@@ -669,7 +669,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
               <>
                 <IconBtn onClick={undoStroke} label="Poništi liniju" disabled={!strokes.length}>↶</IconBtn>
                 <IconBtn onClick={clearStrokes} label="Obriši crtež" disabled={!strokes.length}>✕</IconBtn>
-                <IconBtn onClick={() => setMode('select')} label="Gotovo" accent>✓</IconBtn>
+                <IconBtn onClick={() => setMode('select')} label="Završi crtanje" accent>✓</IconBtn>
               </>
             )}
             <span className="mx-1 hidden h-5 w-px bg-line sm:block" />
@@ -760,10 +760,10 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                     ))}
                   </div>
                 </Group>
-                <Group title="Dimenzije ploče">
+                <Group title="Dimenzije ploče" hint="skica prikazuje omjer širine i visine">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Range label="Širina" value={width} min={60} max={130} onChange={setWidth} />
-                    <Range label="Visina" value={height} min={60} max={130} onChange={setHeight} />
+                    <Range label="Širina" value={width} min={40} max={260} onChange={setWidth} />
+                    <Range label="Visina" value={height} min={40} max={260} onChange={setHeight} />
                   </div>
                 </Group>
                 <button type="button" onClick={resetAll} className="text-sm text-mist underline-offset-4 transition hover:text-paper hover:underline">

@@ -65,6 +65,10 @@ Teksture se **generišu proceduralno** na klijentu (`src/lib/textures.ts`) iz se
 
 ## Deploy (GitHub Pages)
 
-Svaki push na `main` pokreće [.github/workflows/deploy.yml](.github/workflows/deploy.yml): `npm ci` → `npm run build:pages` (Vite `base` = `/impala-klesarstvo/`, plus `404.html` kopija za SPA rute) → objava na **https://mladen-gajic.github.io/impala-klesarstvo/**.
+```bash
+npm run deploy
+```
+
+Skripta [scripts/deploy.sh](scripts/deploy.sh) napravi `npm run build:pages` (Vite `base` = `/impala-klesarstvo/`, plus `404.html` kopija za SPA rute i `.nojekyll`) i force-pushuje `dist/` na granu `gh-pages`, koju GitHub Pages servira na **https://gajicmladen.github.io/impala-klesarstvo/**.
 
 Za hosting na vlastitoj domeni koristiti običan `npm run build` (base `/`) i rewrite svih putanja na `index.html`.
