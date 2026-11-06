@@ -260,11 +260,12 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
   /* any interaction outside the sketch column ends drawing mode */
   useEffect(() => {
     if (mode !== 'draw') return
-    const onDown = (e: PointerEvent) => {
+    const onOutside = (e: Event) => {
       if (!sketchRef.current?.contains(e.target as Node)) setMode('select')
     }
-    document.addEventListener('pointerdown', onDown, true)
-    return () => document.removeEventListener('pointerdown', onDown, true)
+    const events = ['pointerdown', 'click', 'focusin'] as const
+    events.forEach((ev) => document.addEventListener(ev, onOutside, true))
+    return () => events.forEach((ev) => document.removeEventListener(ev, onOutside, true))
   }, [mode])
 
   /* ---------- keyboard ---------- */
