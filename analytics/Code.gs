@@ -4,9 +4,9 @@
  * Postavljanje (≈ 5 minuta):
  *  1. Napravi novu Google tablicu, npr. "Impala analitika".
  *  2. Proširenja → Apps Script → zalijepi ovaj fajl umjesto Code.gs.
- *  3. Postavke projekta (zupčanik) → Svojstva skripte:
- *       TOKEN = tajna lozinka za čitanje statistike (stranica /analitika)
- *       KEY   = (opcionalno) tajna koja se šalje uz svaki događaj; isti string ide u VITE_ANALYTICS_KEY
+ *  3. TOKEN (lozinka za stranicu /analitika): najlakše – odaberi funkciju "postaviToken" gore u traci i klikni Pokreni;
+ *     token se ispiše u dnevniku izvršavanja. (Ručno: zupčanik "Postavke projekta" → "Svojstva skripte" → TOKEN.)
+ *     KEY = (opcionalno) tajna koja se šalje uz svaki događaj; isti string ide u VITE_ANALYTICS_KEY
  *  4. Implementiraj → Nova implementacija → Web-aplikacija → Izvrši kao: ja · Pristup: svi → kopiraj URL.
  *  5. U .env sajta: VITE_ANALYTICS_ENDPOINT=<URL>  (i VITE_ANALYTICS_KEY ako si postavio KEY), zatim `npm run deploy`.
  *
@@ -16,6 +16,23 @@ var SHEET_NAME = 'events';
 var HEADER = ['ts', 'event', 'path', 'ref', 'sid', 'vid', 'device', 'lang', 'w', 'props'];
 
 function props_() { return PropertiesService.getScriptProperties(); }
+
+/**
+ * Jednokratno: generira TOKEN (ako ne postoji) i ispiše ga u dnevnik izvršavanja.
+ * U editoru odaberi funkciju "postaviToken" i klikni Pokreni (Run); token se vidi u "Execution log" ispod.
+ * Ne treba ponovna implementacija web-aplikacije – svojstva se čitaju pri svakom pozivu.
+ */
+function postaviToken() {
+  var p = props_();
+  var token = p.getProperty('TOKEN');
+  if (!token) {
+    token = Utilities.getUuid().replace(/-/g, '').slice(0, 20);
+    p.setProperty('TOKEN', token);
+  }
+  Logger.log('TOKEN za stranicu /analitika: ' + token);
+  Logger.log('KEY (zaštita upisa, opcionalno): ' + (p.getProperty('KEY') || '(nije postavljen)'));
+  return token;
+}
 
 function sheet_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
