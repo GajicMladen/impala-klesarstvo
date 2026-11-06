@@ -18,6 +18,7 @@ import {
   bboxOf,
   elemLabel,
   elemPrice,
+  scaleElem,
   uid,
   type Elem,
   type ShapeId,
@@ -29,6 +30,7 @@ import {
   type PhotoElem,
   type TextElem,
   type StrokeElem,
+  type Box,
 } from './scene'
 import { DecorShape, FigureShape, VaseShape, LanternShape, PhotoSilhouette } from './parts'
 
@@ -157,6 +159,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
   const svgRef = useRef<SVGSVGElement>(null)
   const sketchRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<Drag | null>(null)
+  const resizeRef = useRef<{ id: string; origin: Elem; box: Box; start: { x: number; y: number } } | null>(null)
   const drawRef = useRef<number[] | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const uploadTarget = useRef<string | null>(null)
@@ -318,7 +321,25 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
     const p = toSvg(e)
     dragRef.current = { id: el.id, startX: p.x, startY: p.y, origin: el }
   }
+  const onResizeDown = (e: React.PointerEvent, el: Elem, box: Box) => {
+    e.stopPropagation()
+    try {
+      svgRef.current?.setPointerCapture(e.pointerId)
+    } catch {
+      /* see above */
+    }
+    resizeRef.current = { id: el.id, origin: el, box, start: toSvg(e) }
+  }
   const onSvgPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    const r = resizeRef.current
+    if (r) {
+      const p = toSvg(e)
+      const d0 = Math.max(1, r.start.x - r.box.x + (r.start.y - r.box.y))
+      const d1 = p.x - r.box.x + (p.y - r.box.y)
+      const k = Math.max(0.2, Math.min(5, d1 / d0))
+      setElems((prev) => prev.map((el) => (el.id === r.id ? scaleElem(r.origin, k, r.box) : el)))
+      return
+    }
     const d = dragRef.current
     if (d) {
       const p = toSvg(e)
@@ -340,6 +361,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
   }
   const onSvgPointerUp = () => {
     dragRef.current = null
+    resizeRef.current = null
     if (drawRef.current) {
       const pts = drawRef.current
       drawRef.current = null
@@ -520,7 +542,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
         return (
           <g key={el.id} {...common}>
             <Hit el={el} />
-            <g transform={`translate(${el.x} ${el.y})`}>
+            <g transform={`translate(${el.x} ${el.y}) scale(${el.scale ?? 1})`}>
               <VaseShape id={el.variant} fill="url(#cfg-stone)" gloss="url(#cfg-gloss)" />
             </g>
           </g>
@@ -529,7 +551,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
         return (
           <g key={el.id} {...common}>
             <Hit el={el} />
-            <g transform={`translate(${el.x} ${el.y})`}>
+            <g transform={`translate(${el.x} ${el.y}) scale(${el.scale ?? 1})`}>
               <LanternShape id={el.variant} fill="url(#cfg-stone)" gloss="url(#cfg-gloss)" />
             </g>
           </g>
@@ -555,8 +577,8 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
 
       <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:gap-10">
         {/* ---------- sketch (sticky) ---------- */}
-        <div ref={sketchRef} className="sticky top-[76px] z-30 min-w-0 self-start bg-ink pb-3 md:top-24">
-          <div className="relative overflow-hidden border-y border-line bg-ink md:rounded-3xl md:border">
+        <div ref={sketchRef} className="sticky top-[76px] z-30 flex min-w-0 flex-col self-start bg-ink pb-3 md:top-24">
+          <div className="relative order-2 overflow-hidden border-y border-line bg-ink md:rounded-3xl md:border">
             <svg
               ref={svgRef}
               viewBox="0 0 600 450"
@@ -636,19 +658,48 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                 </g>
               )}
 
-              {selBox && mode === 'select' && (
-                <rect
-                  x={selBox.x}
-                  y={selBox.y}
-                  width={selBox.w}
-                  height={selBox.h}
-                  rx="4"
-                  fill="none"
-                  stroke="#3ea36f"
-                  strokeWidth="1.4"
-                  strokeDasharray="5 3"
-                  pointerEvents="none"
-                />
+              {selBox && sel && mode === 'select' && (
+                <>
+                  <rect
+                    x={selBox.x}
+                    y={selBox.y}
+                    width={selBox.w}
+                    height={selBox.h}
+                    rx="4"
+                    fill="none"
+                    stroke="#3ea36f"
+                    strokeWidth="1.4"
+                    strokeDasharray="5 3"
+                    pointerEvents="none"
+                  />
+                  <g
+                    transform={`translate(${selBox.x} ${selBox.y})`}
+                    style={{ cursor: 'pointer' }}
+                    onPointerDown={(e) => {
+                      e.stopPropagation()
+                      remove(sel.id)
+                    }}
+                    data-testid="remove-handle"
+                    role="button"
+                    aria-label={`Ukloni: ${elemLabel(sel)}`}
+                  >
+                    <circle r="17" fill="#000" fillOpacity="0" />
+                    <circle r="11" fill="#e05252" stroke="#0b0b0c" strokeWidth="1.5" />
+                    <path d="M-4,-4 L4,4 M4,-4 L-4,4" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+                  </g>
+                  <g
+                    transform={`translate(${selBox.x + selBox.w} ${selBox.y + selBox.h})`}
+                    style={{ cursor: 'nwse-resize' }}
+                    onPointerDown={(e) => onResizeDown(e, sel, selBox)}
+                    data-testid="resize-handle"
+                    role="button"
+                    aria-label={`Promijeni veličinu: ${elemLabel(sel)}`}
+                  >
+                    <circle r="17" fill="#000" fillOpacity="0" />
+                    <circle r="11" fill="#3ea36f" stroke="#0b0b0c" strokeWidth="1.5" />
+                    <path d="M-5,5 L5,-5 M1,-5 L5,-5 L5,-1 M-1,5 L-5,5 L-5,1" fill="none" stroke="#0b0b0c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </g>
+                </>
               )}
 
             </svg>
@@ -660,8 +711,8 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
             )}
           </div>
 
-          {/* toolbar */}
-          <div className="mt-3 flex flex-wrap items-center gap-2 px-5 md:px-0">
+          {/* toolbar – above the sketch on phones, below it on desktop */}
+          <div className="order-1 mb-3 flex flex-wrap items-center gap-2 px-5 md:px-0 lg:order-3 lg:mb-0 lg:mt-3">
             {mode === 'select' ? (
               <IconBtn onClick={() => { setMode('draw'); setSelected(null); toast('Docrtajte oblik – svaka linija ima teksturu odabranog kamena.') }} label="Docrtaj spomenik">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
@@ -688,7 +739,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
-                className="mx-5 mt-2 flex flex-wrap items-center gap-2 rounded-2xl border border-accent/40 bg-ink-2 px-3 py-2 md:mx-0"
+                className="order-4 mx-5 mt-2 flex flex-wrap items-center gap-2 rounded-2xl border border-accent/40 bg-ink-2 px-3 py-2 md:mx-0"
               >
                 <span className="text-xs text-mist">Odabrano:</span>
                 <span className="text-sm font-medium">{elemLabel(sel)}</span>
@@ -699,10 +750,10 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                       <IconBtn onClick={() => update<TextElem>(sel.id, { size: Math.min(48, sel.size + 2) })} label="Veće">+</IconBtn>
                     </>
                   )}
-                  {(sel.kind === 'decor' || sel.kind === 'figure') && (
+                  {(sel.kind === 'decor' || sel.kind === 'figure' || sel.kind === 'vase' || sel.kind === 'lantern' || sel.kind === 'stroke') && (
                     <>
-                      <IconBtn onClick={() => update(sel.id, { scale: Math.max(0.5, sel.scale - 0.15) } as Partial<Elem>)} label="Manje">−</IconBtn>
-                      <IconBtn onClick={() => update(sel.id, { scale: Math.min(2.2, sel.scale + 0.15) } as Partial<Elem>)} label="Veće">+</IconBtn>
+                      <IconBtn onClick={() => update(sel.id, scaleElem(sel, 0.88, bboxOf(sel)) as Partial<Elem>)} label="Manje">−</IconBtn>
+                      <IconBtn onClick={() => update(sel.id, scaleElem(sel, 1.14, bboxOf(sel)) as Partial<Elem>)} label="Veće">+</IconBtn>
                     </>
                   )}
                   {sel.kind === 'photo' && (

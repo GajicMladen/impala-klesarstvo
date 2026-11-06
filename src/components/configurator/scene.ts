@@ -80,8 +80,8 @@ export type TextElem = Base & { kind: 'text'; role: TextRole; text: string; size
 export type PhotoElem = Base & { kind: 'photo'; src?: string; w: number; h: number }
 export type DecorElem = Base & { kind: 'decor'; decor: DecorId; scale: number }
 export type FigureElem = Base & { kind: 'figure'; figure: FigureId; scale: number }
-export type VaseElem = Base & { kind: 'vase'; variant: VaseId }
-export type LanternElem = Base & { kind: 'lantern'; variant: LanternId }
+export type VaseElem = Base & { kind: 'vase'; variant: VaseId; scale?: number }
+export type LanternElem = Base & { kind: 'lantern'; variant: LanternId; scale?: number }
 export type StrokeElem = { id: string; kind: 'stroke'; points: number[] }
 export type Elem = TextElem | PhotoElem | DecorElem | FigureElem | VaseElem | LanternElem | StrokeElem
 
@@ -132,11 +132,15 @@ export function bboxOf(el: Elem): Box {
       return { x: el.x - (w * el.scale) / 2, y: el.y - h * el.scale, w: w * el.scale, h: h * el.scale }
     }
     case 'vase': {
-      const [w, h] = VASE_SIZE[el.variant]
+      const [w0, h0] = VASE_SIZE[el.variant]
+      const k = el.scale ?? 1
+      const w = w0 * k, h = h0 * k
       return { x: el.x - w / 2, y: el.y - h, w, h }
     }
     case 'lantern': {
-      const [w, h] = LANT_SIZE[el.variant]
+      const [w0, h0] = LANT_SIZE[el.variant]
+      const k = el.scale ?? 1
+      const w = w0 * k, h = h0 * k
       return { x: el.x - w / 2, y: el.y - h, w, h }
     }
     case 'stroke': {
@@ -147,6 +151,21 @@ export function bboxOf(el: Elem): Box {
       }
       return { x: x0 - 10, y: y0 - 10, w: x1 - x0 + 20, h: y1 - y0 + 20 }
     }
+  }
+}
+
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
+
+/** Returns a copy of `origin` scaled by factor k (strokes scale around the top-left of `box`). */
+export function scaleElem(origin: Elem, k: number, box: Box): Elem {
+  switch (origin.kind) {
+    case 'text': return { ...origin, size: clamp(origin.size * k, 8, 80) }
+    case 'photo': return { ...origin, w: clamp(origin.w * k, 24, 220), h: clamp(origin.h * k, 30, 280) }
+    case 'decor':
+    case 'figure': return { ...origin, scale: clamp(origin.scale * k, 0.3, 3.5) }
+    case 'vase':
+    case 'lantern': return { ...origin, scale: clamp((origin.scale ?? 1) * k, 0.4, 3) }
+    case 'stroke': return { ...origin, points: origin.points.map((v, i) => (i % 2 === 0 ? box.x + (v - box.x) * k : box.y + (v - box.y) * k)) }
   }
 }
 

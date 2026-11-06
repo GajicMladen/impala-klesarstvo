@@ -12,12 +12,6 @@ const cutouts = [
   { src: '/hero/spomenik-andjeo.png', alt: 'Spomenik s anđelom od bijelog mramora', className: 'right-0 -top-[3%] w-[40%]', delay: 0.65 },
 ]
 
-const stacked = [
-  { src: '/hero/spomenik-srce.png', alt: 'Spomenik u obliku srca s klesanom ružom', className: 'w-[72%] self-start' },
-  { src: '/hero/spomenik-andjeo.png', alt: 'Spomenik s anđelom od bijelog mramora', className: 'w-[60%] self-end' },
-  { src: '/hero/grobnica.png', alt: 'Obiteljska grobnica od crnog i crvenog granita', className: 'w-[94%] self-center' },
-]
-
 export function Hero() {
   const impala = byId('impala')!
   const tex = useTexture(impala)
@@ -106,21 +100,18 @@ export function Hero() {
               />
             ))}
           </div>
-          {/* mobile / tablet: stacked, sliding in alternately from left and right */}
-          <div className="flex flex-col gap-8 lg:hidden" aria-hidden="true">
-            {stacked.map((p, i) => (
-              <motion.img
-                key={p.src}
-                src={asset(p.src)}
-                alt={p.alt}
-                initial={{ opacity: 0, x: i % 2 === 0 ? -90 : 90 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                className={`${p.className} drop-shadow-[0_24px_30px_rgba(0,0,0,0.75)]`}
-                loading="eager"
-              />
-            ))}
+          {/* mobile / tablet: a single isolated monument */}
+          <div className="flex justify-center lg:hidden" aria-hidden="true">
+            <motion.img
+              src={asset('/hero/spomenik-andjeo.png')}
+              alt="Spomenik s anđelom od bijelog mramora"
+              initial={{ opacity: 0, x: 90 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              className="w-[74%] max-w-sm drop-shadow-[0_24px_30px_rgba(0,0,0,0.75)]"
+              loading="eager"
+            />
           </div>
         </div>
 
