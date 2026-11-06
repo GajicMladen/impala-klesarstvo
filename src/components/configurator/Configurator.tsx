@@ -4,6 +4,7 @@ import { byId, materials } from '../../data/materials'
 import { useTexture } from '../../lib/useTexture'
 import { paletteLightness } from '../../lib/textures'
 import { StoneTile } from '../StoneTile'
+import { asset } from '../../lib/asset'
 import {
   SHAPES,
   DECORS,
@@ -36,6 +37,8 @@ import { DecorShape, FigureShape, VaseShape, LanternShape, PhotoSilhouette } fro
 
 const granites = materials.filter((m) => m.kind === 'granit')
 const PHONE = '385981826790'
+/** When set (VITE_IMGBB_KEY), the sketch is uploaded and sent as a link inside the WhatsApp message. */
+const IMGBB_KEY: string | undefined = import.meta.env.VITE_IMGBB_KEY || undefined
 
 type Tab = 'oblik' | 'kamen' | 'natpisi' | 'foto' | 'ukrasi' | 'dodaci'
 const TABS: { id: Tab; label: string }[] = [
@@ -155,6 +158,8 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
   const [liveStroke, setLiveStroke] = useState<number[] | null>(null)
   const [showSummary, setShowSummary] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [step, setStep] = useState(0)
+  const [sending, setSending] = useState(false)
 
   const svgRef = useRef<SVGSVGElement>(null)
   const sketchRef = useRef<HTMLDivElement>(null)
@@ -491,8 +496,22 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
     }
   }
 
-  /** Mobile: native share sheet with the PNG attached (user picks WhatsApp → contact). Desktop: download + WhatsApp text. */
-  const shareWithSketch = async () => {
+  const copyImage = async (blob: Blob) => {
+    try {
+      if (typeof ClipboardItem === 'undefined' || !navigator.clipboard?.write) return false
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Step 2 of the manual flow. The WhatsApp chat with the workshop already exists (step 1 opened it via wa.me),
+   * so in the share sheet it is at the top of the recent chats even if the number is not saved.
+   * Mobile: share sheet with the PNG. Desktop: PNG copied to the clipboard + downloaded, to paste into the chat.
+   */
+  const attachSketch = async () => {
     let blob: Blob
     try {
       blob = await renderPng()
@@ -500,21 +519,50 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
       toast('Skicu nije bilo moguće izraditi.')
       return
     }
+    const copied = await copyImage(blob)
     const file = new File([blob], sketchFileName(), { type: 'image/png' })
     if (canShareFiles && navigator.canShare({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], text: summary, title: 'Impala Klesarstvo – skica spomenika' })
-        toast('Skica i upit su poslani.')
-        setShowSummary(false)
+        await navigator.share({ files: [file], title: 'Skica spomenika – Impala Klesarstvo' })
+        setStep(2)
+        toast('Skica podijeljena.')
+        return
       } catch (err) {
-        if ((err as DOMException).name !== 'AbortError') toast('Dijeljenje nije uspjelo – skica je preuzeta.')
-        if ((err as DOMException).name !== 'AbortError') downloadBlob(blob)
+        if ((err as DOMException).name === 'AbortError') return
       }
-      return
     }
     downloadBlob(blob)
-    window.open(waHref, '_blank', 'noopener')
-    toast('Skica je preuzeta – priložite je u WhatsApp poruci.')
+    setStep(2)
+    toast(copied ? 'Skica kopirana i preuzeta – zalijepite je u WhatsApp razgovor.' : 'Skica preuzeta – priložite je u WhatsApp razgovoru.')
+  }
+
+  /** Automatic flow (needs VITE_IMGBB_KEY): upload the PNG, then open WhatsApp with the text and a link to the sketch. */
+  const sendWithUpload = async () => {
+    if (!IMGBB_KEY || sending) return
+    setSending(true)
+    // open the tab synchronously (inside the user gesture) so popup blockers allow it, then navigate it after the upload
+    const win = window.open('', '_blank')
+    try {
+      const blob = await renderPng()
+      const fd = new FormData()
+      fd.append('image', blob, sketchFileName())
+      fd.append('name', sketchFileName().replace(/\.png$/, ''))
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(IMGBB_KEY)}`, { method: 'POST', body: fd })
+      const json = (await res.json()) as { success?: boolean; data?: { url?: string } }
+      const link = json?.data?.url
+      if (!json?.success || !link) throw new Error('upload failed')
+      const href = `https://wa.me/${PHONE}?text=${encodeURIComponent(`${summary}\n\nSkica: ${link}`)}`
+      if (win) win.location.href = href
+      else window.open(href, '_blank', 'noopener')
+      toast('Skica poslana – otvara se WhatsApp s upitom i poveznicom na skicu.')
+      setShowSummary(false)
+    } catch {
+      win?.close()
+      toast('Učitavanje skice nije uspjelo – koristite ručni postupak u dva koraka.')
+      setStep(0)
+    } finally {
+      setSending(false)
+    }
   }
 
   /* ---------- render helpers ---------- */
@@ -1122,34 +1170,79 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
               <div className="text-xs font-medium uppercase tracking-[0.22em] text-accent">Vaš upit</div>
               <h3 className="mt-2 text-2xl font-light">Pošaljite skicu radionici</h3>
               <pre className="mt-5 whitespace-pre-wrap rounded-2xl border border-line bg-ink p-4 font-sans text-sm leading-relaxed text-paper/85">{summary}</pre>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={shareWithSketch}
-                  className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-ink transition hover:bg-paper"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="9" cy="9" r="2" /><path d="m21 15-5-5L5 21" /></svg>
-                  {canShareFiles ? 'Pošalji skicu WhatsAppom' : 'Preuzmi skicu i otvori WhatsApp'}
-                </button>
-                <a href={waHref} target="_blank" rel="noreferrer" className="rounded-full border border-paper/30 px-5 py-3 text-sm font-medium transition hover:border-paper">
-                  Samo tekst WhatsAppom
+              {IMGBB_KEY ? (
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={sendWithUpload}
+                    disabled={sending}
+                    className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-ink transition hover:bg-paper disabled:opacity-60"
+                  >
+                    {sending ? 'Učitavanje skice…' : 'Pošalji WhatsAppom (upit + skica)'}
+                  </button>
+                  <p className="basis-full text-xs text-mist">
+                    Skica se učitava kao slika i šalje kao poveznica u poruci radionici (098 182 6790). Broj ne morate imati spremljen.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-5 space-y-3">
+                  <div className={`flex items-start gap-3 rounded-2xl border p-4 transition ${step >= 1 ? 'border-accent/50' : 'border-line'}`}>
+                    <span className={`grid size-7 shrink-0 place-items-center rounded-full text-xs font-semibold ${step >= 1 ? 'bg-accent text-ink' : 'bg-ink-3 text-paper'}`}>
+                      {step >= 1 ? '✓' : '1'}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium">Otvorite razgovor s radionicom</div>
+                      <div className="mt-0.5 text-xs leading-relaxed text-mist">
+                        WhatsApp otvara razgovor s brojem 098 182 6790 i upisuje tekst upita – broj ne morate imati spremljen. Pošaljite poruku.
+                      </div>
+                      <a
+                        href={waHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => setStep((s) => Math.max(s, 1))}
+                        className="mt-3 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-sm font-medium text-ink transition hover:bg-paper"
+                      >
+                        Otvori WhatsApp s upitom
+                      </a>
+                    </div>
+                  </div>
+                  <div className={`flex items-start gap-3 rounded-2xl border p-4 transition ${step >= 2 ? 'border-accent/50' : 'border-line'}`}>
+                    <span className={`grid size-7 shrink-0 place-items-center rounded-full text-xs font-semibold ${step >= 2 ? 'bg-accent text-ink' : 'bg-ink-3 text-paper'}`}>
+                      {step >= 2 ? '✓' : '2'}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium">Priložite skicu u isti razgovor</div>
+                      <div className="mt-0.5 text-xs leading-relaxed text-mist">
+                        {canShareFiles
+                          ? 'Otvorit će se izbornik za dijeljenje – odaberite WhatsApp; razgovor s radionicom bit će na vrhu popisa.'
+                          : 'Skica se kopira u međuspremnik i preuzima – u razgovoru je zalijepite (Ctrl+V / ⌘V) ili priložite kao sliku.'}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={attachSketch}
+                        className="mt-3 inline-flex items-center gap-2 rounded-full border border-accent px-4 py-2.5 text-sm font-medium text-accent transition hover:bg-accent hover:text-ink"
+                      >
+                        {canShareFiles ? 'Podijeli skicu' : 'Kopiraj i preuzmi skicu'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className="mt-4 flex flex-wrap gap-2">
+                <a href={asset('impala-klesarstvo.vcf')} className="rounded-full border border-line px-4 py-2 text-xs font-medium text-paper/85 transition hover:border-paper/60">
+                  Spremi kontakt radionice
                 </a>
-                <button type="button" onClick={exportPng} className="rounded-full border border-paper/30 px-5 py-3 text-sm font-medium transition hover:border-paper">
+                <button type="button" onClick={exportPng} className="rounded-full border border-line px-4 py-2 text-xs font-medium text-paper/85 transition hover:border-paper/60">
                   Preuzmi skicu (PNG)
                 </button>
-                <button type="button" onClick={copy} className="rounded-full border border-paper/30 px-5 py-3 text-sm font-medium transition hover:border-paper">
-                  {copied ? 'Kopirano ✓' : 'Kopiraj tekst'}
+                <button type="button" onClick={copy} className="rounded-full border border-line px-4 py-2 text-xs font-medium text-paper/85 transition hover:border-paper/60">
+                  {copied ? 'Kopirano ✓' : 'Kopiraj tekst upita'}
                 </button>
-                <button type="button" onClick={() => setShowSummary(false)} className="ml-auto px-3 py-3 text-sm text-mist transition hover:text-paper">
+                <button type="button" onClick={() => setShowSummary(false)} className="ml-auto px-3 py-2 text-xs text-mist transition hover:text-paper">
                   Zatvori
                 </button>
               </div>
-              <p className="mt-4 text-xs text-mist">
-                {canShareFiles
-                  ? 'Otvorit će se izbornik za dijeljenje: odaberite WhatsApp i kontakt Impala Klesarstvo – skica ide kao slika, tekst upita kao poruka.'
-                  : 'Na računalu se skica preuzima kao slika, a WhatsApp se otvara s tekstom upita – priložite preuzetu sliku u poruci.'}{' '}
-                Ili nas nazovite: 098 182 6790 (Dejan) · 098 9077 071 (Jovan)
-              </p>
+              <p className="mt-4 text-xs text-mist">Ili nas nazovite: 098 182 6790 (Dejan) · 098 9077 071 (Jovan)</p>
             </motion.div>
           </motion.div>
         )}

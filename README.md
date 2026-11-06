@@ -63,6 +63,13 @@ Teksture se **generišu proceduralno** na klijentu (`src/lib/textures.ts`) iz se
 4. Višejezičnost (HR / SR ćirilica / EN) – Vukovar je dvojezična sredina.
 5. SEO i Google Business profil, povezivanje sa Instagram API-jem za automatsku galeriju.
 
+## Slanje skice WhatsApp-om
+
+WhatsApp linkovi (`wa.me`) primaju samo tekst, pa prilog ide na jedan od dva načina:
+
+1. **Bez backend-a (podrazumevano)** – postupak u dva koraka u prozoru „Pošalji upit“: (1) `wa.me` link otvara razgovor sa brojem radionice i upisuje tekst upita (broj ne mora biti sačuvan), (2) „Podijeli skicu“ otvara sistemski meni (telefon) gde je taj razgovor na vrhu liste, ili kopira/preuzima PNG (računar) za lepljenje u razgovor. Tu je i „Spremi kontakt radionice“ (`public/impala-klesarstvo.vcf`).
+2. **Automatski** – ako je u `.env` postavljen `VITE_IMGBB_KEY` (besplatan ključ sa api.imgbb.com), skica se uploaduje i WhatsApp se otvara sa tekstom i linkom na sliku, broj je već upisan. Ključ se ugrađuje u bundle, pa je javan; za produkciju je bolje upload preko sopstvenog backenda (Supabase/Cloudinary).
+
 ## Deploy (GitHub Pages)
 
 ```bash
