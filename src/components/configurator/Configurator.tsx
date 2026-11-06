@@ -158,6 +158,13 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
 
   const svgRef = useRef<SVGSVGElement>(null)
   const sketchRef = useRef<HTMLDivElement>(null)
+  const [canShareFiles] = useState(() => {
+    try {
+      return typeof navigator !== 'undefined' && !!navigator.canShare && navigator.canShare({ files: [new File([''], 'x.png', { type: 'image/png' })] })
+    } catch {
+      return false
+    }
+  })
   const dragRef = useRef<Drag | null>(null)
   const resizeRef = useRef<{ id: string; origin: Elem; box: Box; start: { x: number; y: number } } | null>(null)
   const drawRef = useRef<number[] | null>(null)
@@ -445,26 +452,69 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
     }
   }
 
-  const exportPng = () => {
-    const svg = svgRef.current
-    if (!svg) return
-    const xml = new XMLSerializer().serializeToString(svg)
-    const url = URL.createObjectURL(new Blob([xml], { type: 'image/svg+xml;charset=utf-8' }))
-    const img = new Image()
-    img.onload = () => {
-      const c = document.createElement('canvas')
-      c.width = 1800
-      c.height = 1350
-      c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height)
-      URL.revokeObjectURL(url)
-      const a = document.createElement('a')
-      const surname = texts.find((t) => t.role === 'prezime')?.text.toLowerCase() || 'spomenik'
-      a.download = `impala-skica-${surname}.png`
-      a.href = c.toDataURL('image/png')
-      a.click()
+  const sketchFileName = () => `impala-skica-${texts.find((t) => t.role === 'prezime')?.text.toLowerCase().replace(/[^a-z0-9ćčšžđ]+/gi, '-') || 'spomenik'}.png`
+
+  /** Renders the current sketch to a PNG blob (1800 × 1350). */
+  const renderPng = () =>
+    new Promise<Blob>((resolve, reject) => {
+      const svg = svgRef.current
+      if (!svg) return reject(new Error('no sketch'))
+      const xml = new XMLSerializer().serializeToString(svg)
+      const url = URL.createObjectURL(new Blob([xml], { type: 'image/svg+xml;charset=utf-8' }))
+      const img = new Image()
+      img.onload = () => {
+        const c = document.createElement('canvas')
+        c.width = 1800
+        c.height = 1350
+        c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height)
+        URL.revokeObjectURL(url)
+        c.toBlob((b) => (b ? resolve(b) : reject(new Error('png failed'))), 'image/png')
+      }
+      img.onerror = () => reject(new Error('svg render failed'))
+      img.src = url
+    })
+
+  const downloadBlob = (blob: Blob) => {
+    const a = document.createElement('a')
+    a.download = sketchFileName()
+    a.href = URL.createObjectURL(blob)
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000)
+  }
+
+  const exportPng = async () => {
+    try {
+      downloadBlob(await renderPng())
       toast('Skica preuzeta kao PNG.')
+    } catch {
+      toast('Skicu nije bilo moguće izraditi.')
     }
-    img.src = url
+  }
+
+  /** Mobile: native share sheet with the PNG attached (user picks WhatsApp → contact). Desktop: download + WhatsApp text. */
+  const shareWithSketch = async () => {
+    let blob: Blob
+    try {
+      blob = await renderPng()
+    } catch {
+      toast('Skicu nije bilo moguće izraditi.')
+      return
+    }
+    const file = new File([blob], sketchFileName(), { type: 'image/png' })
+    if (canShareFiles && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], text: summary, title: 'Impala Klesarstvo – skica spomenika' })
+        toast('Skica i upit su poslani.')
+        setShowSummary(false)
+      } catch (err) {
+        if ((err as DOMException).name !== 'AbortError') toast('Dijeljenje nije uspjelo – skica je preuzeta.')
+        if ((err as DOMException).name !== 'AbortError') downloadBlob(blob)
+      }
+      return
+    }
+    downloadBlob(blob)
+    window.open(waHref, '_blank', 'noopener')
+    toast('Skica je preuzeta – priložite je u WhatsApp poruci.')
   }
 
   /* ---------- render helpers ---------- */
@@ -1073,8 +1123,16 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
               <h3 className="mt-2 text-2xl font-light">Pošaljite skicu radionici</h3>
               <pre className="mt-5 whitespace-pre-wrap rounded-2xl border border-line bg-ink p-4 font-sans text-sm leading-relaxed text-paper/85">{summary}</pre>
               <div className="mt-5 flex flex-wrap gap-3">
-                <a href={waHref} target="_blank" rel="noreferrer" className="rounded-full bg-accent px-5 py-3 text-sm font-medium text-ink transition hover:bg-paper">
-                  Pošalji WhatsAppom
+                <button
+                  type="button"
+                  onClick={shareWithSketch}
+                  className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-ink transition hover:bg-paper"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="9" cy="9" r="2" /><path d="m21 15-5-5L5 21" /></svg>
+                  {canShareFiles ? 'Pošalji skicu WhatsAppom' : 'Preuzmi skicu i otvori WhatsApp'}
+                </button>
+                <a href={waHref} target="_blank" rel="noreferrer" className="rounded-full border border-paper/30 px-5 py-3 text-sm font-medium transition hover:border-paper">
+                  Samo tekst WhatsAppom
                 </a>
                 <button type="button" onClick={exportPng} className="rounded-full border border-paper/30 px-5 py-3 text-sm font-medium transition hover:border-paper">
                   Preuzmi skicu (PNG)
@@ -1087,7 +1145,10 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                 </button>
               </div>
               <p className="mt-4 text-xs text-mist">
-                Savjet: preuzmite skicu i priložite je uz WhatsApp poruku. Ili nas nazovite: 098 182 6790 (Dejan) · 098 9077 071 (Jovan)
+                {canShareFiles
+                  ? 'Otvorit će se izbornik za dijeljenje: odaberite WhatsApp i kontakt Impala Klesarstvo – skica ide kao slika, tekst upita kao poruka.'
+                  : 'Na računalu se skica preuzima kao slika, a WhatsApp se otvara s tekstom upita – priložite preuzetu sliku u poruci.'}{' '}
+                Ili nas nazovite: 098 182 6790 (Dejan) · 098 9077 071 (Jovan)
               </p>
             </motion.div>
           </motion.div>
