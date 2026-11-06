@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Gantari", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-display: "Cinzel", Georgia, serif;
+
+  --color-ink: #0b0b0c;
+  --color-ink-2: #141415;
+  --color-ink-3: #1d1d20;
+  --color-line: #2a2a2e;
+  --color-paper: #f4f2ee;
+  --color-mist: #a3a09b;
+  --color-accent: #3ea36f;
+  --color-accent-deep: #1e5a3c;
+  --color-beige: #e0dbd9;
+  --color-gold: #d6b45c;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-ink);
+}
+
+/* Polished stone: texture + gloss sweep */
+.stone {
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  transition: background-image 0.6s ease;
+}
+.stone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.05) 28%,
+    rgba(0, 0, 0, 0.1) 52%,
+    rgba(255, 255, 255, 0.07) 100%
+  );
+  pointer-events: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+@keyframes hero-pan {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+.hero-pan {
+  animation: hero-pan 60s linear infinite alternate;
+}
+
+.map-dark {
+  filter: grayscale(1) invert(0.92) contrast(0.95) brightness(0.9);
+}
