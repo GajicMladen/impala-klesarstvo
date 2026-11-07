@@ -14,15 +14,40 @@ const links = [
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false)
+  const [hidden, setHidden] = useState(false)
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
+  const inConfigurator = pathname.startsWith('/konfigurator')
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24)
+    let lastY = window.scrollY
+    let anchorY = lastY // scroll position where the direction last changed
+    let lastDir = 0
+    const onScroll = () => {
+      const y = window.scrollY
+      setScrolled(y > 24)
+      // phones only, configurator only: slide the bar away after ~10px of downward travel, bring it back after ~10px upward
+      if (inConfigurator && window.matchMedia('(max-width: 767px)').matches) {
+        const dir = y > lastY ? 1 : y < lastY ? -1 : 0
+        if (dir !== 0 && dir !== lastDir) {
+          anchorY = lastY
+          lastDir = dir
+        }
+        if (y <= 80) setHidden(false)
+        else if (dir === 1 && y - anchorY > 10) setHidden(true)
+        else if (dir === -1 && anchorY - y > 10) setHidden(false)
+      } else setHidden(false)
+      lastY = y
+    }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  }, [inConfigurator])
+
+  // sticky blocks (the configurator sketch) read this to sit right under the bar, or at the top when it is hidden
+  useEffect(() => {
+    document.documentElement.style.setProperty('--nav-h', hidden && !open ? '0px' : '76px')
+  }, [hidden, open])
 
   useEffect(() => setOpen(false), [pathname])
 
@@ -30,7 +55,7 @@ export function Nav() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         scrolled || open ? 'border-b border-line bg-ink/80 backdrop-blur-md' : ''
-      }`}
+      } ${hidden && !open ? '-translate-y-full' : 'translate-y-0'}`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-8">
         <Link to="/" className="flex items-center gap-3" aria-label="Impala Klesarstvo – početna">

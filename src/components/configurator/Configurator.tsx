@@ -113,7 +113,7 @@ function IconBtn({ onClick, label, children, accent, disabled }: { onClick: () =
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition disabled:opacity-40 ${
+      className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition disabled:opacity-40 ${
         accent ? 'border-accent bg-accent text-ink hover:bg-paper' : 'border-line text-paper/85 hover:border-paper/60'
       }`}
     >
@@ -682,6 +682,25 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
     }
   }
 
+  const tabBar = (
+    <div className="no-scrollbar flex gap-1 overflow-x-auto border-b border-line" role="tablist" aria-label="Kategorije postavki">
+      {TABS.map((tb) => (
+        <button
+          key={tb.id}
+          type="button"
+          onClick={() => setTab(tb.id)}
+          className={`shrink-0 whitespace-nowrap border-b-2 px-2.5 py-1.5 text-[13px] transition lg:px-4 lg:py-3 lg:text-sm ${
+            tab === tb.id ? 'border-accent text-paper' : 'border-transparent text-mist hover:text-paper'
+          }`}
+          aria-selected={tab === tb.id}
+          role="tab"
+        >
+          {tb.label}
+        </button>
+      ))}
+    </div>
+  )
+
   const order: Record<Elem['kind'], number> = { stroke: 0, figure: 1, vase: 2, lantern: 3, decor: 4, photo: 5, text: 6 }
   const sorted = [...elems].sort((a, b) => order[a.kind] - order[b.kind])
 
@@ -692,7 +711,10 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
 
       <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:gap-10">
         {/* ---------- sketch (sticky) ---------- */}
-        <div ref={sketchRef} className="sticky top-[76px] z-30 flex min-w-0 flex-col self-start bg-ink pb-3 md:top-24">
+        <div
+          ref={sketchRef}
+          className="sticky top-[var(--nav-h,76px)] z-30 flex min-w-0 flex-col self-start bg-ink pb-2 transition-[top] duration-300 md:top-24 lg:pb-3"
+        >
           <div className="relative order-2 overflow-hidden border-y border-line bg-ink md:rounded-3xl md:border">
             <svg
               ref={svgRef}
@@ -826,8 +848,8 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
             )}
           </div>
 
-          {/* toolbar – above the sketch on phones, below it on desktop */}
-          <div className="order-1 mb-3 flex flex-wrap items-center gap-2 px-5 md:px-0 lg:order-3 lg:mb-0 lg:mt-3">
+          {/* toolbar – one scrollable row above the sketch on phones, wrapping row below it on desktop */}
+          <div className="no-scrollbar order-1 mb-2 flex flex-nowrap items-center gap-2 overflow-x-auto px-5 py-0.5 md:px-0 lg:order-3 lg:mb-0 lg:mt-3 lg:flex-wrap lg:overflow-visible">
             {mode === 'select' ? (
               <IconBtn onClick={() => { setMode('draw'); setSelected(null); toast('Docrtajte oblik – svaka linija ima teksturu odabranog kamena.') }} label="Docrtaj spomenik">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
@@ -839,7 +861,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                 <IconBtn onClick={() => setMode('select')} label="Završi crtanje" accent>✓</IconBtn>
               </>
             )}
-            <span className="mx-1 hidden h-5 w-px bg-line sm:block" />
+            <span className="mx-1 h-5 w-px shrink-0 bg-line" />
             <IconBtn onClick={exportPng} label="Preuzmi skicu">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3" /></svg>
             </IconBtn>
@@ -854,7 +876,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
-                className="order-4 mx-5 mt-2 flex flex-wrap items-center gap-2 rounded-2xl border border-accent/40 bg-ink-2 px-3 py-2 md:mx-0"
+                className="order-3 mx-5 mt-2 flex flex-wrap items-center gap-2 rounded-2xl border border-accent/40 bg-ink-2 px-3 py-2 md:mx-0"
               >
                 <span className="text-xs text-mist">Odabrano:</span>
                 <span className="text-sm font-medium">{elemLabel(sel)}</span>
@@ -883,28 +905,16 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* category tabs – part of the sticky stack on phones so the user never scrolls back up */}
+          <div className="order-4 mt-1 px-5 md:px-0 lg:hidden">{tabBar}</div>
         </div>
 
         {/* ---------- controls ---------- */}
         <div className="min-w-0 px-5 md:px-0">
-          <div className="no-scrollbar -mx-5 flex gap-1 overflow-x-auto border-b border-line px-5 md:mx-0 md:px-0">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTab(t.id)}
-                className={`whitespace-nowrap border-b-2 px-4 py-3 text-sm transition ${
-                  tab === t.id ? 'border-accent text-paper' : 'border-transparent text-mist hover:text-paper'
-                }`}
-                aria-selected={tab === t.id}
-                role="tab"
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
+          <div className="hidden lg:block">{tabBar}</div>
 
-          <div className="mt-7 space-y-9">
+          <div className="mt-6 space-y-9 lg:mt-7">
             {tab === 'oblik' && (
               <>
                 <Group title="Oblik ploče" hint="ili docrtajte vlastiti oblik na skici">
