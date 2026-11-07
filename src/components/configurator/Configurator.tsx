@@ -879,7 +879,19 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                 className="order-3 mx-5 mt-2 flex flex-wrap items-center gap-2 rounded-2xl border border-accent/40 bg-ink-2 px-3 py-2 md:mx-0"
               >
                 <span className="text-xs text-mist">Odabrano:</span>
-                <span className="text-sm font-medium">{elemLabel(sel)}</span>
+                {sel.kind === 'text' ? (
+                  <input
+                    value={sel.text}
+                    maxLength={40}
+                    onChange={(e) => update<TextElem>(sel.id, { text: e.target.value })}
+                    placeholder={ROLE_LABEL[sel.role]}
+                    aria-label={`Tekst natpisa: ${ROLE_LABEL[sel.role]}`}
+                    className="min-w-0 flex-1 basis-40 rounded-lg border border-line bg-ink px-3 py-1.5 text-sm outline-none transition focus:border-accent"
+                    style={{ fontFamily }}
+                  />
+                ) : (
+                  <span className="text-sm font-medium">{elemLabel(sel)}</span>
+                )}
                 <span className="ml-auto flex flex-wrap items-center gap-1.5">
                   {sel.kind === 'text' && (
                     <>
