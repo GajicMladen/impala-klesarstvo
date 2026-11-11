@@ -18,7 +18,7 @@ Stack: Vite + React 19 + TypeScript + Tailwind CSS v4 + Framer Motion + React Ro
 | Ruta | Sadržaj |
 | --- | --- |
 | `/` | Hero (izolovani radovi bez pozadine), 3D karusel materijala, radovi, usluge, teaser konfiguratora, o nama, kontakt |
-| `/materijali` | Katalog sa filterima (boja, vrsta, primjena, porijeklo) |
+| `/materijali` | Katalog sa filterima (boja, vrsta, primjena) |
 | `/konfigurator` | Konfigurator spomenika (prima `?kamen=<id>` iz modala materijala) |
 
 ## Šta sajt sadrži
@@ -27,7 +27,7 @@ Stack: Vite + React 19 + TypeScript + Tailwind CSS v4 + Framer Motion + React Ro
 | --- | --- |
 | Hero | Naslov, CTA dugmad, 3 fotografije radova. Ako postoji `public/video/hero.mp4`, automatski se prikazuje kao pozadinski video. |
 | Materijali (3D karusel) | Margraf-style perspektivni karusel sa svim materijalima (`featured`). Strelice, prevlačenje, tastatura. |
-| Katalog | 9 granita iz stvarne ponude radionice (fotografije ploča), filteri: boja, primjena, porijeklo (vrsta se prikazuje tek kad postoji više od jedne). Klik otvara detalje. |
+| Katalog | 9 granita iz stvarne ponude radionice (fotografije ploča), filteri: boja i primjena (vrsta se prikazuje tek kad postoji više od jedne). Klik otvara detalje. |
 | Radovi | 12 fotografija: 10 s Instagram profila `@impalaklesarstvo` + stubište i šank koje je dostavila radionica, lightbox. Linkovi na Instagram i Facebook. |
 | Usluge | 6 kartica usluga. |
 | Konfigurator spomenika | Oblik i dimenzije, kamen ploče i postolja, font i boja slova. Svi elementi na skici se **slobodno prevlače** (miš i touch): natpisi (prezime, više imena/godina/epitafa), fotografije (prazan okvir ili upload prave slike, ostaje lokalno), gravirani ukrasi (križ, pravoslavni križ, ruža, golubica, anđeo), 3D skulpture (anđeo, Gospa, stojeći križ, knjiga), vaze (3 oblika) i lampioni (2). Dugme „Docrtaj spomenik“ uključuje crtanje linija sa teksturom odabranog kamena. Odabrani element se može smanjiti/povećati/ukloniti (i tipkom Delete). Toast poruke potvrđuju svaku akciju. Cena se namerno ne prikazuje (zahtev radionice – konkurencija), PNG skica, slanje upita WhatsApp-om: na telefonu preko Web Share API-ja (skica kao slika + tekst upita u sistemskom „Podijeli“ meniju), na računaru skica se preuzme i otvori se WhatsApp sa tekstom. Mobilni: skica je sticky na vrhu, kontrole u tabovima. |
@@ -46,7 +46,7 @@ Pločice se u konfiguratoru učitavaju kao data URL, jer izvoz skice u PNG serij
 ## Šta je placeholder i treba potvrditi sa firmom
 
 - **Radno vrijeme** u sekciji Kontakt (Pon–Pet 07–16, Sub po dogovoru) – pretpostavka.
-- **Opisi materijala** – lista je stvarna (9 granita od radionice), ali opisi, primena i poreklo su naši; neka ih radionica potvrdi.
+- **Opisi materijala** – lista je stvarna (9 granita od radionice), ali opisi i primena su naši; zemlja porekla se namerno ne prikazuje; neka ih radionica potvrdi.
 - **Kamen na radovima** – gde nismo sigurni, opis je opšti (npr. „Crni granit“); tačne nazive za stubište i šank treba dobiti od radionice.
 - **Lokacija na mapi** – koordinate ulice Željeznička u Borovu (približno, kućni broj nije geokodiran).
 - **E-mail adresa** – nije poznata, zato upit ide preko WhatsApp-a / telefona.

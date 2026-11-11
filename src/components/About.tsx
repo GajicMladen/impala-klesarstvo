@@ -44,7 +44,7 @@ export function About() {
               završne ugradnje.
             </p>
             <p>
-              Radimo isključivo s prirodnim kamenom: granitima iz Indije, Južne Afrike, Italije i Španjolske. Svaki rad
+              Radimo isključivo s prirodnim kamenom. Svaki rad
               nastaje u dogovoru s obitelji, jer spomenik nije proizvod – on je sjećanje.
             </p>
           </div>

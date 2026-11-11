@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { COLORS, KINDS, ORIGINS, USES, materials, type Color, type Kind, type Material, type Use } from '../data/materials'
+import { COLORS, KINDS, USES, materials, type Color, type Kind, type Material, type Use } from '../data/materials'
 import { StoneTile } from './StoneTile'
 
 const ASPECTS = ['4 / 5', '3 / 4', '1 / 1', '4 / 5', '5 / 6', '3 / 4', '1 / 1', '4 / 5']
@@ -101,8 +101,7 @@ export function MaterialCatalog({ onOpen }: { onOpen: (m: Material) => void }) {
   const [colors, setColors] = useState<Set<Color>>(new Set())
   const [kind, setKind] = useState<Kind | null>(null)
   const [uses, setUses] = useState<Set<Use>>(new Set())
-  const [origin, setOrigin] = useState<string | null>(null)
-  const [open, setOpen] = useState({ boja: true, vrsta: true, primjena: false, porijeklo: false })
+  const [open, setOpen] = useState({ boja: true, vrsta: true, primjena: false })
   const [mobileFilters, setMobileFilters] = useState(false)
 
   const toggleSet = <T,>(set: Set<T>, v: T) => {
@@ -118,18 +117,16 @@ export function MaterialCatalog({ onOpen }: { onOpen: (m: Material) => void }) {
         (m) =>
           (colors.size === 0 || m.colors.some((c) => colors.has(c))) &&
           (!kind || m.kind === kind) &&
-          (uses.size === 0 || m.uses.some((u) => uses.has(u))) &&
-          (!origin || m.country === origin),
+          (uses.size === 0 || m.uses.some((u) => uses.has(u))),
       ),
-    [colors, kind, uses, origin],
+    [colors, kind, uses],
   )
 
-  const activeCount = colors.size + (kind ? 1 : 0) + uses.size + (origin ? 1 : 0)
+  const activeCount = colors.size + (kind ? 1 : 0) + uses.size
   const reset = () => {
     setColors(new Set())
     setKind(null)
     setUses(new Set())
-    setOrigin(null)
   }
 
   const filters = (
@@ -154,13 +151,6 @@ export function MaterialCatalog({ onOpen }: { onOpen: (m: Material) => void }) {
         {useOptions.map((u) => (
           <Option key={u.id} active={uses.has(u.id)} onClick={() => setUses(toggleSet(uses, u.id))}>
             {u.label}
-          </Option>
-        ))}
-      </FilterGroup>
-      <FilterGroup title="Porijeklo" open={open.porijeklo} onToggle={() => setOpen((o) => ({ ...o, porijeklo: !o.porijeklo }))}>
-        {ORIGINS.map((o) => (
-          <Option key={o} active={origin === o} onClick={() => setOrigin(origin === o ? null : o)}>
-            {o}
           </Option>
         ))}
       </FilterGroup>

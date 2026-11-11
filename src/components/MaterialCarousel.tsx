@@ -46,7 +46,7 @@ export function MaterialCarousel({ onOpen }: { onOpen: (m: Material) => void }) 
         <SectionHead
           eyebrow="Materijali"
           title="Kamen koji traje generacijama"
-          text="Graniti iz Indije, Južne Afrike, Italije i Španjolske – fotografije stvarnih ploča iz naše ponude. Listajte ili dodirnite karticu za detalje."
+          text="Fotografije stvarnih ploča iz naše ponude. Listajte ili dodirnite karticu za detalje."
           action={
             <Link
               to="/materijali"
@@ -111,7 +111,7 @@ export function MaterialCarousel({ onOpen }: { onOpen: (m: Material) => void }) 
                 if (d === 0) onOpen(m)
                 else setActive(i)
               }}
-              aria-label={`${m.name}, ${m.country}`}
+              aria-label={m.name}
               tabIndex={-1}
             >
               <StoneTile
@@ -121,7 +121,6 @@ export function MaterialCarousel({ onOpen }: { onOpen: (m: Material) => void }) 
               />
               <div className={`mt-5 text-center transition-opacity duration-300 ${small && d !== 0 ? 'opacity-0' : ''}`}>
                 <div className="font-semibold">{m.name}</div>
-                <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-mist">{m.country}</div>
               </div>
             </motion.button>
           )

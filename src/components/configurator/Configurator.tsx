@@ -445,7 +445,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
   const summary = [
     'Upit za ponudu – Impala Klesarstvo',
     `Oblik: ${S.label}${strokes.length ? ` + docrtano (${strokes.length} linija)` : ''}`,
-    `Kamen ploče: ${mat.name} (${mat.country})`,
+    `Kamen ploče: ${mat.name}`,
     `Postolje: ${baseMat.name}`,
     `Dimenzije ploče: ${width} × ${height} cm`,
     `Natpisi: ${texts.map((t) => `${ROLE_LABEL[t.role]}: ${t.text}`).join(' | ') || 'bez natpisa'}`,
@@ -970,7 +970,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
 
             {tab === 'kamen' && (
               <>
-                <Group title="Kamen ploče" hint={`${mat.name} · ${mat.country}`}>
+                <Group title="Kamen ploče" hint={mat.name}>
                   <div className="no-scrollbar flex w-full gap-2 overflow-x-auto pb-1">
                     {granites.map((m) => (
                       <button

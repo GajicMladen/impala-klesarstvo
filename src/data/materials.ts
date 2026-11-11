@@ -18,7 +18,6 @@ export interface Material {
   id: string
   name: string
   altName?: string
-  country: string
   kind: Kind
   colors: Color[]
   uses: Use[]
@@ -68,7 +67,6 @@ export const materials: Material[] = [
     id: 'impala',
     name: 'Impala',
     altName: 'Impala Black',
-    country: 'Južna Afrika',
     kind: 'granit',
     colors: ['crna', 'siva'],
     uses: ['spomenici', 'kuhinje', 'stubista', 'fasade'],
@@ -81,7 +79,6 @@ export const materials: Material[] = [
   {
     id: 'bengal-black',
     name: 'Bengal Black',
-    country: 'Indija',
     kind: 'granit',
     colors: ['crna'],
     uses: ['spomenici', 'kuhinje', 'stubista', 'kupaonice'],
@@ -94,13 +91,12 @@ export const materials: Material[] = [
   {
     id: 'bianco-sardo',
     name: 'Bianco Sardo',
-    country: 'Italija',
     kind: 'granit',
     colors: ['bijela', 'siva'],
     uses: ['spomenici', 'stubista', 'fasade', 'kuhinje'],
     featured: true,
     description:
-      'Svijetli sardinijski granit s bijelim, sivim i crnim zrnima. Klasičan izbor za spomenike i postolja – elegantan, svijetao i vrlo izdržljiv.',
+      'Svijetli granit s bijelim, sivim i crnim zrnima. Klasičan izbor za spomenike i postolja – elegantan, svijetao i vrlo izdržljiv.',
     ...photos('bianco-sardo'),
     texture: { palette: ['#424340', '#7b7b76', '#9f9e96', '#bcbab1', '#d9d7cd'] },
   },
@@ -108,7 +104,6 @@ export const materials: Material[] = [
     id: 'multicolor',
     name: 'Multicolor',
     altName: 'Multicolor Red',
-    country: 'Indija',
     kind: 'granit',
     colors: ['crvena', 'crna'],
     uses: ['spomenici', 'kuhinje', 'stubista'],
@@ -121,13 +116,12 @@ export const materials: Material[] = [
   {
     id: 'rosa-beta',
     name: 'Rosa Beta',
-    country: 'Italija',
     kind: 'granit',
     colors: ['ruzicasta', 'siva'],
     uses: ['spomenici', 'stubista', 'fasade'],
     featured: true,
     description:
-      'Sardinijski granit krupnog zrna u toplim sivo‑ružičastim tonovima s crnim točkama. Nježna boja koja lijepo stari i dobro podnosi vremenske uvjete.',
+      'Granit krupnog zrna u toplim sivo‑ružičastim tonovima s crnim točkama. Nježna boja koja lijepo stari i dobro podnosi vremenske uvjete.',
     ...photos('rosa-beta'),
     texture: { palette: ['#3d3d39', '#7e7b74', '#a09c93', '#bab7ad', '#d3d0c6'] },
   },
@@ -135,20 +129,18 @@ export const materials: Material[] = [
     id: 'rosso-porrino',
     name: 'Rosso Porriño',
     altName: 'Rosa Porriño',
-    country: 'Španjolska',
     kind: 'granit',
     colors: ['ruzicasta', 'siva'],
     uses: ['spomenici', 'stubista', 'fasade', 'kuhinje'],
     featured: true,
     description:
-      'Granit iz Galicije s ružičastom podlogom i krupnim sivim i crnim zrnima. Topao i vrlo postojan kamen za spomenike, stubišta i vanjske obloge.',
+      'Granit ružičaste podloge s krupnim sivim i crnim zrnima. Topao i vrlo postojan kamen za spomenike, stubišta i vanjske obloge.',
     ...photos('rosso-porrino'),
     texture: { palette: ['#454642', '#7f7e76', '#afa79b', '#c5bcae', '#d6d1c3'] },
   },
   {
     id: 'verde-marina',
     name: 'Verde Marina',
-    country: 'Indija',
     kind: 'granit',
     colors: ['zelena', 'siva'],
     uses: ['spomenici', 'kuhinje', 'stubista', 'fasade'],
@@ -161,7 +153,6 @@ export const materials: Material[] = [
   {
     id: 'vizag-blue',
     name: 'Vizag Blue',
-    country: 'Indija',
     kind: 'granit',
     colors: ['plava', 'siva'],
     uses: ['spomenici', 'kuhinje', 'stubista'],
@@ -174,7 +165,6 @@ export const materials: Material[] = [
   {
     id: 'viscount-white',
     name: 'Viscount White',
-    country: 'Indija',
     kind: 'granit',
     colors: ['bijela', 'siva'],
     uses: ['kuhinje', 'kupaonice', 'stubista', 'spomenici'],
@@ -185,7 +175,5 @@ export const materials: Material[] = [
     texture: { palette: ['#504f49', '#83827b', '#9f9e96', '#b5b2aa', '#cbc7be'] },
   },
 ]
-
-export const ORIGINS = Array.from(new Set(materials.map((m) => m.country))).sort((a, b) => a.localeCompare(b, 'hr'))
 
 export const byId = (id: string) => materials.find((m) => m.id === id)

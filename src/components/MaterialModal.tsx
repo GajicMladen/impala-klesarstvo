@@ -67,7 +67,7 @@ export function MaterialModal({
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="text-xs font-medium uppercase tracking-[0.22em] text-accent">
-                    {KINDS.find((k) => k.id === material.kind)?.label} · {material.country}
+                    {KINDS.find((k) => k.id === material.kind)?.label}
                   </div>
                   <h3 className="mt-2 text-3xl font-light md:text-4xl">{material.name}</h3>
                   {material.altName && <div className="mt-1 text-sm text-mist">poznat i kao {material.altName}</div>}
