@@ -2,3 +2,7 @@ node_modules
 dist
 .DS_Store
 .env
+
+# originali fotografija od radionice (ulaz za scripts/materijali.py) – ne objavljuju se
+dostavljeni-materijal/
+.venv

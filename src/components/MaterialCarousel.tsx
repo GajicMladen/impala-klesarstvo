@@ -46,7 +46,7 @@ export function MaterialCarousel({ onOpen }: { onOpen: (m: Material) => void }) 
         <SectionHead
           eyebrow="Materijali"
           title="Kamen koji traje generacijama"
-          text="Graniti iz Indije, Južne Afrike i Skandinavije, mramori i travertini iz Italije. Listajte ponudu ili dodirnite karticu za detalje."
+          text="Graniti iz Indije, Južne Afrike, Italije i Španjolske – fotografije stvarnih ploča iz naše ponude. Listajte ili dodirnite karticu za detalje."
           action={
             <Link
               to="/materijali"

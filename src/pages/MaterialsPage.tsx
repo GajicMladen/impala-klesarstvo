@@ -9,7 +9,7 @@ export function MaterialsPage({ onOpenMaterial }: { onOpenMaterial: (m: Material
         <SectionHead
           eyebrow="Katalog materijala"
           title="Pronađite svoj kamen"
-          text="Filtrirajte po boji, vrsti kamena, namjeni ili porijeklu. Svaki materijal nabavljamo u blokovima i pločama te obrađujemo u vlastitoj radionici u Borovu."
+          text="Filtrirajte po boji, namjeni ili porijeklu. Svaki materijal nabavljamo u blokovima i pločama te obrađujemo u vlastitoj radionici u Borovu."
         />
         <MaterialCatalog onOpen={onOpenMaterial} />
       </div>

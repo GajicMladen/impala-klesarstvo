@@ -1,4 +1,5 @@
 import { SectionHead } from './SectionHead'
+import { FACEBOOK_URL, INSTAGRAM_URL, PHONES, PRIMARY_PHONE } from '../data/contact'
 
 const LAT = 45.4067
 const LON = 18.9724
@@ -22,12 +23,11 @@ export function Contact() {
             <div>
               <dt className="text-xs font-medium uppercase tracking-[0.2em] text-mist">Telefon</dt>
               <dd className="mt-2 space-y-1 text-lg">
-                <a href="tel:+385981826790" className="block transition hover:text-accent">
-                  098 182 6790 <span className="text-sm text-mist">· Dejan</span>
-                </a>
-                <a href="tel:+385989077071" className="block transition hover:text-accent">
-                  098 9077 071 <span className="text-sm text-mist">· Jovan</span>
-                </a>
+                {PHONES.map((p) => (
+                  <a key={p.tel} href={`tel:${p.tel}`} className="block transition hover:text-accent">
+                    {p.label} <span className="text-sm text-mist">· {p.name}</span>
+                  </a>
+                ))}
               </dd>
             </div>
             <div>
@@ -42,7 +42,7 @@ export function Contact() {
               <dt className="text-xs font-medium uppercase tracking-[0.2em] text-mist">Pratite nas</dt>
               <dd className="mt-3 flex gap-3">
                 <a
-                  href="https://www.instagram.com/impalaklesarstvo/"
+                  href={INSTAGRAM_URL}
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-full border border-line px-4 py-2 text-sm transition hover:border-paper"
@@ -50,7 +50,7 @@ export function Contact() {
                   Instagram
                 </a>
                 <a
-                  href="https://www.facebook.com/impalaklesarstvo.vukovar.3/"
+                  href={FACEBOOK_URL}
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-full border border-line px-4 py-2 text-sm transition hover:border-paper"
@@ -58,7 +58,7 @@ export function Contact() {
                   Facebook
                 </a>
                 <a
-                  href="https://wa.me/385981826790"
+                  href={`https://wa.me/${PRIMARY_PHONE.wa}`}
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-full border border-line px-4 py-2 text-sm transition hover:border-paper"

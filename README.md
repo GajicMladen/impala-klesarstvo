@@ -26,22 +26,28 @@ Stack: Vite + React 19 + TypeScript + Tailwind CSS v4 + Framer Motion + React Ro
 | Sekcija | Opis |
 | --- | --- |
 | Hero | Naslov, CTA dugmad, 3 fotografije radova. Ako postoji `public/video/hero.mp4`, automatski se prikazuje kao pozadinski video. |
-| Materijali (3D karusel) | Margraf-style perspektivni karusel sa 10 istaknutih materijala. Strelice, prevlačenje, tastatura. |
-| Katalog | 24 materijala, filteri: boja, vrsta, primjena, porijeklo. Klik otvara detalje. |
-| Radovi | 10 fotografija sa Instagram profila `@impalaklesarstvo`, lightbox. |
+| Materijali (3D karusel) | Margraf-style perspektivni karusel sa svim materijalima (`featured`). Strelice, prevlačenje, tastatura. |
+| Katalog | 9 granita iz stvarne ponude radionice (fotografije ploča), filteri: boja, primjena, porijeklo (vrsta se prikazuje tek kad postoji više od jedne). Klik otvara detalje. |
+| Radovi | 12 fotografija: 10 s Instagram profila `@impalaklesarstvo` + stubište i šank koje je dostavila radionica, lightbox. Linkovi na Instagram i Facebook. |
 | Usluge | 6 kartica usluga. |
-| Konfigurator spomenika | Oblik i dimenzije, kamen ploče i postolja, font i boja slova. Svi elementi na skici se **slobodno prevlače** (miš i touch): natpisi (prezime, više imena/godina/epitafa), fotografije (prazan okvir ili upload prave slike, ostaje lokalno), gravirani ukrasi (križ, pravoslavni križ, ruža, golubica, anđeo), 3D skulpture (anđeo, Gospa, stojeći križ, knjiga), vaze (3 oblika) i lampioni (2). Dugme „Docrtaj spomenik“ uključuje crtanje linija sa teksturom odabranog kamena. Odabrani element se može smanjiti/povećati/ukloniti (i tipkom Delete). Toast poruke potvrđuju svaku akciju. Okvirna cena (demo), PNG skica, slanje upita WhatsApp-om: na telefonu preko Web Share API-ja (skica kao slika + tekst upita u sistemskom „Podijeli“ meniju), na računaru skica se preuzme i otvori se WhatsApp sa tekstom. Mobilni: skica je sticky na vrhu, kontrole u tabovima. |
-| O nama / Kontakt | Podaci o firmi, telefoni, OSM mapa, linkovi na društvene mreže. |
+| Konfigurator spomenika | Oblik i dimenzije, kamen ploče i postolja, font i boja slova. Svi elementi na skici se **slobodno prevlače** (miš i touch): natpisi (prezime, više imena/godina/epitafa), fotografije (prazan okvir ili upload prave slike, ostaje lokalno), gravirani ukrasi (križ, pravoslavni križ, ruža, golubica, anđeo), 3D skulpture (anđeo, Gospa, stojeći križ, knjiga), vaze (3 oblika) i lampioni (2). Dugme „Docrtaj spomenik“ uključuje crtanje linija sa teksturom odabranog kamena. Odabrani element se može smanjiti/povećati/ukloniti (i tipkom Delete). Toast poruke potvrđuju svaku akciju. Cena se namerno ne prikazuje (zahtev radionice – konkurencija), PNG skica, slanje upita WhatsApp-om: na telefonu preko Web Share API-ja (skica kao slika + tekst upita u sistemskom „Podijeli“ meniju), na računaru skica se preuzme i otvori se WhatsApp sa tekstom. Mobilni: skica je sticky na vrhu, kontrole u tabovima. |
+| O nama / Kontakt | Podaci o firmi, telefoni (Jovan je primarni broj svuda, uključujući WhatsApp upite), OSM mapa, Instagram i Facebook. Svi kontakt podaci su u `src/data/contact.ts`. |
 
 ## Teksture kamena
 
-Teksture se **generišu proceduralno** na klijentu (`src/lib/textures.ts`) iz seeda i palete boja, tako da demo ne zavisi od tuđih fotografija. Kada radionica dostavi prave fotografije ploča, dovoljno je u `src/data/materials.ts` zameniti `texture` sa URL-om slike (i u `StoneTile`/konfiguratoru koristiti tu sliku umesto generisane).
+Materijali koriste **prave fotografije ploča** koje je dostavila radionica (originali u `dostavljeni-materijal/` u korenu projekta – nisu u gitu ni na sajtu). Skripta [scripts/materijali.py](scripts/materijali.py) iz svake pravi:
+
+- `public/materijali/<id>.jpg` – isječak bez odsjaja za katalog, modal i karusel (`photo` u `materials.ts`),
+- `public/materijali/tile/<id>.jpg` – bešavnu pločicu 512 px za skicu u konfiguratoru i pozadinu naslovnice (`tile`), da zrno kamena na spomeniku bude u realnoj razmeri,
+- paletu boja (`texture.palette`) za boju dok se slika učitava i za izbor boje slova (svetao/taman kamen).
+
+Pločice se u konfiguratoru učitavaju kao data URL, jer izvoz skice u PNG serijalizuje SVG i spoljne slike u njemu ne bi bile vidljive. Proceduralni generator (`src/lib/textures.ts`) ostaje za mramorne skulpture u konfiguratoru i kao rezerva ako fotografija ne može da se učita.
 
 ## Šta je placeholder i treba potvrditi sa firmom
 
 - **Radno vrijeme** u sekciji Kontakt (Pon–Pet 07–16, Sub po dogovoru) – pretpostavka.
-- **Cene u konfiguratoru** – čisto ilustrativne, označene kao „demo“. Formula je u `Configurator.tsx` (`price`).
-- **Lista materijala i opisi** – tipični graniti/mramori iz klesarske prakse; uskladiti sa stvarnom ponudom.
+- **Opisi materijala** – lista je stvarna (9 granita od radionice), ali opisi, primena i poreklo su naši; neka ih radionica potvrdi.
+- **Kamen na radovima** – gde nismo sigurni, opis je opšti (npr. „Crni granit“); tačne nazive za stubište i šank treba dobiti od radionice.
 - **Lokacija na mapi** – koordinate ulice Željeznička u Borovu (približno, kućni broj nije geokodiran).
 - **E-mail adresa** – nije poznata, zato upit ide preko WhatsApp-a / telefona.
 - **Logo** – korišćena je profilna slika sa Instagrama (150 px). Tražiti vektorski logo.
@@ -53,7 +59,7 @@ Teksture se **generišu proceduralno** na klijentu (`src/lib/textures.ts`) iz se
 
 - Video: `public/video/hero.mp4` (mp4, H.264, bez zvuka, 10–20 s).
 - Fotografije radova: `public/radovi/` + unos u `src/data/works.ts`.
-- Materijali: `src/data/materials.ts`.
+- Materijali: fotografija u `dostavljeni-materijal/` → red u `CROPS` u `scripts/materijali.py` → pokrenuti skriptu → unos u `src/data/materials.ts` (`...photos('<id>')` + paleta iz ispisa skripte).
 
 ## Sledeći koraci (predlog za prezentaciju)
 

@@ -1,8 +1,8 @@
 /**
  * Procedural stone textures (granite / marble / travertine).
- * Everything is generated on the client from a seed, so the demo has
- * no dependency on third‑party material photos. Swap a material's
- * `texture` for a real photo URL whenever the workshop supplies one.
+ * Generated on the client from a seed. Catalogue stones use real photos
+ * (`photo` / `tile` in materials.ts); procedural textures remain for the
+ * marble sculptures in the configurator and as a fallback if a photo fails.
  */
 export interface Veins {
   color: string

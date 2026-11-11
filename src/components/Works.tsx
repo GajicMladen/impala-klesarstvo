@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { works } from '../data/works'
 import { SectionHead } from './SectionHead'
 import { asset } from '../lib/asset'
+import { FACEBOOK_URL, INSTAGRAM_URL } from '../data/contact'
 
 export function Works() {
   const [open, setOpen] = useState<number | null>(null)
@@ -28,22 +29,35 @@ export function Works() {
       <div className="mx-auto max-w-7xl px-5 md:px-8">
         <SectionHead
           eyebrow="Radovi"
-          title="Iz naše radionice na groblja Slavonije i Srijema"
-          text="Izbor nedavnih radova. Svaki spomenik izrađujemo po mjeri – oblik, kamen, natpis i ukrasi dogovaraju se s obitelji."
+          title="Iz naše radionice diljem Slavonije i Srijema"
+          text="Izbor nedavnih radova – od spomenika i obiteljskih grobnica do stubišta i šankova. Svaki rad izrađujemo po mjeri, u dogovoru s naručiteljem."
           action={
-            <a
-              href="https://www.instagram.com/impalaklesarstvo/"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-sm text-mist transition hover:border-paper hover:text-paper"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                <rect x="3" y="3" width="18" height="18" rx="5" />
-                <circle cx="12" cy="12" r="4" />
-                <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" />
-              </svg>
-              @impalaklesarstvo
-            </a>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href={INSTAGRAM_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-sm text-mist transition hover:border-paper hover:text-paper"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="5" />
+                  <circle cx="12" cy="12" r="4" />
+                  <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" />
+                </svg>
+                Instagram
+              </a>
+              <a
+                href={FACEBOOK_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-sm text-mist transition hover:border-paper hover:text-paper"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H7.9v3h2.6V21h3Z" />
+                </svg>
+                Facebook
+              </a>
+            </div>
           }
         />
 

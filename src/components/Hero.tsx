@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { byId } from '../data/materials'
-import { useTexture } from '../lib/useTexture'
+import { byId, materials } from '../data/materials'
+import { useTileTexture } from '../lib/useTexture'
 import { asset } from '../lib/asset'
+import { PRIMARY_PHONE } from '../data/contact'
 
 /* Izolirani radovi (pozadina uklonjena) – public/hero/ */
 const cutouts = [
@@ -12,17 +13,20 @@ const cutouts = [
   { src: '/hero/spomenik-andjeo.png', alt: 'Spomenik s anđelom od bijelog mramora', className: 'right-0 -top-[3%] w-[40%]', delay: 0.65 },
 ]
 
+/** 2–4 vrste, inače vrsta (1 vrsta, 5 vrsta, 21 vrsta …). */
+const stoneKinds = (n: number) => (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'vrste kamena' : 'vrsta kamena')
+
 export function Hero() {
   const impala = byId('impala')!
-  const tex = useTexture(impala)
+  const tex = useTileTexture(impala)
   const [video, setVideo] = useState(true)
 
   return (
     <section id="top" className="relative flex min-h-screen items-end overflow-hidden">
       <div className="absolute inset-0" aria-hidden="true">
         <div
-          className="hero-pan absolute inset-0 opacity-60"
-          style={{ backgroundImage: tex ? `url(${tex})` : undefined, backgroundSize: '900px', backgroundColor: '#161719' }}
+          className="hero-pan absolute inset-0 opacity-35"
+          style={{ backgroundImage: tex ? `url(${tex})` : undefined, backgroundSize: '512px', backgroundColor: '#161719' }}
         />
         {video && (
           /* Ubacite video radionice u public/video/hero.mp4 – automatski se prikazuje. */
@@ -77,10 +81,10 @@ export function Hero() {
                 Dizajnirajte svoj spomenik
               </Link>
               <a
-                href="tel:+385981826790"
+                href={`tel:${PRIMARY_PHONE.tel}`}
                 className="rounded-full border border-paper/30 px-6 py-3.5 font-medium transition hover:border-paper hover:bg-paper/5"
               >
-                Nazovite: 098 182 6790
+                Nazovite: {PRIMARY_PHONE.label}
               </a>
             </motion.div>
           </div>
@@ -123,7 +127,7 @@ export function Hero() {
         >
           {[
             ['30+', 'godina iskustva'],
-            ['24', 'vrste kamena'],
+            [String(materials.length), stoneKinds(materials.length)],
             ['1', 'radionica, vlastita proizvodnja'],
           ].map(([n, l]) => (
             <div key={l}>

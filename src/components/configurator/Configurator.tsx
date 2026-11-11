@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { byId, materials } from '../../data/materials'
-import { useTexture } from '../../lib/useTexture'
-import { paletteLightness } from '../../lib/textures'
+import { useTileTexture } from '../../lib/useTexture'
+import { paletteLightness, type TextureSpec } from '../../lib/textures'
 import { StoneTile } from '../StoneTile'
 import { asset } from '../../lib/asset'
 import { track } from '../../lib/analytics'
+import { PHONES, PRIMARY_PHONE } from '../../data/contact'
 import {
   SHAPES,
   DECORS,
@@ -19,7 +20,6 @@ import {
   defaultElems,
   bboxOf,
   elemLabel,
-  elemPrice,
   scaleElem,
   uid,
   type Elem,
@@ -37,7 +37,24 @@ import {
 import { DecorShape, FigureShape, VaseShape, LanternShape, PhotoSilhouette } from './parts'
 
 const granites = materials.filter((m) => m.kind === 'granit')
-const PHONE = '385981826790'
+/** Size of one repeat of the stone tile in sketch units (the plate is ~300 units wide). */
+const TILE = 200
+/** White marble for the sculptures (not a catalogue stone, so it stays procedural). */
+const MARBLE: { id: string; texture: TextureSpec } = {
+  id: 'skulptura-mramor',
+  texture: {
+    palette: ['#c7c7c5', '#dcdbd8', '#eae9e6', '#f2f1ee', '#f8f7f5'],
+    grain: 0.2,
+    contrast: 0.8,
+    cloud: 0.4,
+    crystal: 8,
+    veins: [
+      { color: '#8c8f93', width: 0.04, warp: 0.95, freq: 1.6, angle: 0.7, strength: 0.7 },
+      { color: '#a9acb0', width: 0.03, warp: 0.8, freq: 2.4, angle: 1.1, strength: 0.35 },
+    ],
+    seed: 21,
+  },
+}
 /** When set (VITE_IMGBB_KEY), the sketch is uploaded and sent as a link inside the WhatsApp message. */
 const IMGBB_KEY: string | undefined = import.meta.env.VITE_IMGBB_KEY || undefined
 
@@ -184,10 +201,9 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
   const S = SHAPES.find((s) => s.id === shape)!
   const mat = byId(matId) ?? granites[0]
   const baseMat = byId(baseId) ?? granites[0]
-  const marble = byId('bianco-carrara')!
-  const tex = useTexture(mat)
-  const baseTex = useTexture(baseMat)
-  const marbleTex = useTexture(marble)
+  const tex = useTileTexture(mat)
+  const baseTex = useTileTexture(baseMat)
+  const marbleTex = useTileTexture(MARBLE)
   const light = paletteLightness(mat.texture) > 0.5
   const inkHex = INKS.find((i) => i.id === ink)!.hex
   const fontFamily = FONTS.find((f) => f.id === font)!.family
@@ -423,15 +439,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
     reader.readAsDataURL(file)
   }
 
-  /* ---------- price / summary / export ---------- */
-  const price = useMemo(() => {
-    const sizeF = Math.pow((width * height) / 8100, 0.7)
-    const extras = elems.reduce((s, el) => s + elemPrice(el), 0)
-    const raw = S.base * (mat.priceFactor ?? 1) * sizeF + 350 * (baseMat.priceFactor ?? 1) + extras
-    return Math.round(raw / 10) * 10
-  }, [width, height, elems, S, mat, baseMat])
-  const fmt = (n: number) => n.toLocaleString('hr-HR')
-
+  /* ---------- summary / export ---------- */
   const ornaments = elems.filter((e) => e.kind === 'decor' || e.kind === 'figure').map(elemLabel)
   const extrasList = elems.filter((e) => e.kind === 'vase' || e.kind === 'lantern').map(elemLabel)
   const summary = [
@@ -446,7 +454,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
     `Ukrasi: ${ornaments.join(', ') || 'bez ukrasa'}`,
     `Vaze i lampioni: ${extrasList.join(', ') || 'bez'}`,
   ].join('\n')
-  const waHref = `https://wa.me/${PHONE}?text=${encodeURIComponent(summary)}`
+  const waHref = `https://wa.me/${PRIMARY_PHONE.wa}?text=${encodeURIComponent(summary)}`
 
   const copy = async () => {
     try {
@@ -467,7 +475,6 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
     elements: elems.length,
     photos: photos.length,
     strokes: strokes.length,
-    price,
   })
 
   const sketchFileName = () => `impala-skica-${texts.find((t) => t.role === 'prezime')?.text.toLowerCase().replace(/[^a-z0-9ćčšžđ]+/gi, '-') || 'spomenik'}.png`
@@ -567,7 +574,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
       const json = (await res.json()) as { success?: boolean; data?: { url?: string } }
       const link = json?.data?.url
       if (!json?.success || !link) throw new Error('upload failed')
-      const href = `https://wa.me/${PHONE}?text=${encodeURIComponent(`${summary}\n\nSkica: ${link}`)}`
+      const href = `https://wa.me/${PRIMARY_PHONE.wa}?text=${encodeURIComponent(`${summary}\n\nSkica: ${link}`)}`
       if (win) win.location.href = href
       else window.open(href, '_blank', 'noopener')
       track('inquiry_sent', { via: 'upload', ...inquiryProps() })
@@ -740,13 +747,13 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                   <stop offset="0.6" stopColor="#000" stopOpacity="0.14" />
                   <stop offset="1" stopColor="#fff" stopOpacity="0.08" />
                 </linearGradient>
-                <pattern id="cfg-stone" patternUnits="userSpaceOnUse" width="512" height="512">
-                  <rect width="512" height="512" fill={mat.texture.palette[2] ?? '#333'} />
-                  {tex && <image href={tex} width="512" height="512" />}
+                <pattern id="cfg-stone" patternUnits="userSpaceOnUse" width={TILE} height={TILE}>
+                  <rect width={TILE} height={TILE} fill={mat.texture.palette[2] ?? '#333'} />
+                  {tex && <image href={tex} width={TILE} height={TILE} />}
                 </pattern>
-                <pattern id="cfg-base" patternUnits="userSpaceOnUse" width="512" height="512" x="40" y="60">
-                  <rect width="512" height="512" fill={baseMat.texture.palette[2] ?? '#555'} />
-                  {baseTex && <image href={baseTex} width="512" height="512" />}
+                <pattern id="cfg-base" patternUnits="userSpaceOnUse" width={TILE} height={TILE} x="40" y="60">
+                  <rect width={TILE} height={TILE} fill={baseMat.texture.palette[2] ?? '#555'} />
+                  {baseTex && <image href={baseTex} width={TILE} height={TILE} />}
                 </pattern>
                 <pattern id="cfg-marble" patternUnits="userSpaceOnUse" width="256" height="256">
                   <rect width="256" height="256" fill="#e8e6e2" />
@@ -1147,15 +1154,12 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
 
           <div className="mt-10 flex flex-col gap-4 rounded-2xl border border-line bg-ink-2 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-mist">
-                Okvirna procjena
-                <span className="rounded-full border border-gold/50 px-2 py-0.5 text-[10px] tracking-normal text-gold">demo · ilustrativno</span>
-              </div>
+              <div className="text-xs uppercase tracking-[0.18em] text-mist">Vaša skica</div>
               <div className="mt-1 text-2xl font-semibold">
-                {fmt(Math.round((price * 0.9) / 10) * 10)} – {fmt(Math.round((price * 1.1) / 10) * 10)} €
+                {mat.name} · {S.label}
               </div>
               <div className="text-xs text-mist">
-                {mat.name} · {S.label} · {width} × {height} cm · {elems.filter((e) => e.kind !== 'text' && e.kind !== 'stroke').length} dodataka
+                {width} × {height} cm · {elems.filter((e) => e.kind !== 'text' && e.kind !== 'stroke').length} dodataka · ponudu šaljemo nakon upita
               </div>
             </div>
             <button type="button" onClick={() => setShowSummary(true)} className="rounded-full bg-accent px-5 py-3 text-sm font-medium text-ink transition hover:bg-paper">
@@ -1220,7 +1224,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                     {sending ? 'Učitavanje skice…' : 'Pošalji WhatsAppom (upit + skica)'}
                   </button>
                   <p className="basis-full text-xs text-mist">
-                    Skica se učitava kao slika i šalje kao poveznica u poruci radionici (098 182 6790). Broj ne morate imati spremljen.
+                    Skica se učitava kao slika i šalje kao poveznica u poruci radionici ({PRIMARY_PHONE.label}). Broj ne morate imati spremljen.
                   </p>
                 </div>
               ) : (
@@ -1232,7 +1236,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                     <div className="min-w-0 flex-1">
                       <div className="font-medium">Otvorite razgovor s radionicom</div>
                       <div className="mt-0.5 text-xs leading-relaxed text-mist">
-                        WhatsApp otvara razgovor s brojem 098 182 6790 i upisuje tekst upita – broj ne morate imati spremljen. Pošaljite poruku.
+                        WhatsApp otvara razgovor s brojem {PRIMARY_PHONE.label} i upisuje tekst upita – broj ne morate imati spremljen. Pošaljite poruku.
                       </div>
                       <a
                         href={waHref}
@@ -1284,7 +1288,7 @@ export function Configurator({ initialMaterial }: { initialMaterial?: string }) 
                   Zatvori
                 </button>
               </div>
-              <p className="mt-4 text-xs text-mist">Ili nas nazovite: 098 182 6790 (Dejan) · 098 9077 071 (Jovan)</p>
+              <p className="mt-4 text-xs text-mist">Ili nas nazovite: {PHONES.map((p) => `${p.label} (${p.name})`).join(' · ')}</p>
             </motion.div>
           </motion.div>
         )}

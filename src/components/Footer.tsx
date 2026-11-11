@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { asset } from '../lib/asset'
+import { FACEBOOK_URL, INSTAGRAM_URL, PHONES } from '../data/contact'
 
 export function Footer() {
   return (
@@ -42,19 +43,19 @@ export function Footer() {
           <div className="text-xs font-medium uppercase tracking-[0.2em] text-mist">Kontakt</div>
           <ul className="mt-4 space-y-2 text-sm">
             <li>Željeznička 45, 32227 Borovo</li>
-            <li>
-              <a href="tel:+385981826790" className="transition hover:text-accent">
-                098 182 6790
+            {PHONES.map((p) => (
+              <li key={p.tel}>
+                <a href={`tel:${p.tel}`} className="transition hover:text-accent">
+                  {p.label} <span className="text-mist">· {p.name}</span>
+                </a>
+              </li>
+            ))}
+            <li className="flex flex-wrap gap-x-4 gap-y-2">
+              <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" className="transition hover:text-accent">
+                Instagram
               </a>
-            </li>
-            <li>
-              <a href="tel:+385989077071" className="transition hover:text-accent">
-                098 9077 071
-              </a>
-            </li>
-            <li>
-              <a href="https://www.instagram.com/impalaklesarstvo/" target="_blank" rel="noreferrer" className="transition hover:text-accent">
-                @impalaklesarstvo
+              <a href={FACEBOOK_URL} target="_blank" rel="noreferrer" className="transition hover:text-accent">
+                Facebook
               </a>
             </li>
           </ul>

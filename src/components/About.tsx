@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { SectionHead } from './SectionHead'
 import { asset } from '../lib/asset'
+import { PRIMARY_PHONE } from '../data/contact'
 
 const points = [
   'Vlastita proizvodnja i strojna obrada kamena',
@@ -43,8 +44,8 @@ export function About() {
               završne ugradnje.
             </p>
             <p>
-              Radimo isključivo s prirodnim kamenom: granitima iz Indije, Južne Afrike i Skandinavije te mramorima i
-              travertinom iz Italije. Svaki rad nastaje u dogovoru s obitelji, jer spomenik nije proizvod – on je sjećanje.
+              Radimo isključivo s prirodnim kamenom: granitima iz Indije, Južne Afrike, Italije i Španjolske. Svaki rad
+              nastaje u dogovoru s obitelji, jer spomenik nije proizvod – on je sjećanje.
             </p>
           </div>
           <ul className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -63,8 +64,8 @@ export function About() {
             <a href="#kontakt" className="rounded-full bg-paper px-6 py-3.5 font-medium text-ink transition hover:bg-accent">
               Dogovorite posjet radionici
             </a>
-            <a href="tel:+385981826790" className="rounded-full border border-paper/30 px-6 py-3.5 font-medium transition hover:border-paper">
-              098 182 6790
+            <a href={`tel:${PRIMARY_PHONE.tel}`} className="rounded-full border border-paper/30 px-6 py-3.5 font-medium transition hover:border-paper">
+              {PRIMARY_PHONE.label}
             </a>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { asset } from '../lib/asset'
+import { PRIMARY_PHONE } from '../data/contact'
 
 const links = [
   { to: '/materijali', label: 'Materijali' },
@@ -81,8 +82,8 @@ export function Nav() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <a href="tel:+385981826790" className="hidden text-sm text-mist transition hover:text-paper lg:block">
-            098 182 6790
+          <a href={`tel:${PRIMARY_PHONE.tel}`} className="hidden text-sm text-mist transition hover:text-paper lg:block">
+            {PRIMARY_PHONE.label}
           </a>
           <Link
             to="/konfigurator"

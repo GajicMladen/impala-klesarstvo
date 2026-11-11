@@ -5,6 +5,11 @@ import { StoneTile } from './StoneTile'
 
 const ASPECTS = ['4 / 5', '3 / 4', '1 / 1', '4 / 5', '5 / 6', '3 / 4', '1 / 1', '4 / 5']
 
+/* Filters only offer values that at least one stone in the current range has. */
+const colorOptions = COLORS.filter((c) => materials.some((m) => m.colors.includes(c.id)))
+const kindOptions = KINDS.filter((k) => materials.some((m) => m.kind === k.id))
+const useOptions = USES.filter((u) => materials.some((m) => m.uses.includes(u.id)))
+
 function Chevron({ open }: { open: boolean }) {
   return (
     <svg
@@ -130,21 +135,23 @@ export function MaterialCatalog({ onOpen }: { onOpen: (m: Material) => void }) {
   const filters = (
     <>
       <FilterGroup title="Boja" open={open.boja} onToggle={() => setOpen((o) => ({ ...o, boja: !o.boja }))}>
-        {COLORS.map((c) => (
+        {colorOptions.map((c) => (
           <Option key={c.id} active={colors.has(c.id)} onClick={() => setColors(toggleSet(colors, c.id))} swatch={c.hex}>
             {c.label}
           </Option>
         ))}
       </FilterGroup>
-      <FilterGroup title="Vrsta" open={open.vrsta} onToggle={() => setOpen((o) => ({ ...o, vrsta: !o.vrsta }))}>
-        {KINDS.map((k) => (
-          <Option key={k.id} active={kind === k.id} onClick={() => setKind(kind === k.id ? null : k.id)}>
-            {k.label}
-          </Option>
-        ))}
-      </FilterGroup>
+      {kindOptions.length > 1 && (
+        <FilterGroup title="Vrsta" open={open.vrsta} onToggle={() => setOpen((o) => ({ ...o, vrsta: !o.vrsta }))}>
+          {kindOptions.map((k) => (
+            <Option key={k.id} active={kind === k.id} onClick={() => setKind(kind === k.id ? null : k.id)}>
+              {k.label}
+            </Option>
+          ))}
+        </FilterGroup>
+      )}
       <FilterGroup title="Primjena" open={open.primjena} onToggle={() => setOpen((o) => ({ ...o, primjena: !o.primjena }))}>
-        {USES.map((u) => (
+        {useOptions.map((u) => (
           <Option key={u.id} active={uses.has(u.id)} onClick={() => setUses(toggleSet(uses, u.id))}>
             {u.label}
           </Option>

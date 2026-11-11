@@ -5,51 +5,50 @@ export interface Shape {
   id: ShapeId
   label: string
   path: string
-  base: number
   textTop: number
   photoY: number
   half: number
 }
 
 export const SHAPES: Shape[] = [
-  { id: 'klasik', label: 'Klasični', base: 1100, textTop: 165, photoY: 153, half: 150, path: 'M150,330 V110 Q150,60 200,60 H400 Q450,60 450,110 V330 Z' },
-  { id: 'luk', label: 'Polukružni', base: 1150, textTop: 185, photoY: 170, half: 150, path: 'M150,330 V200 A150,140 0 0 1 450,200 V330 Z' },
-  { id: 'kosi', label: 'Kosi', base: 1100, textTop: 175, photoY: 162, half: 150, path: 'M150,330 V130 Q150,100 180,96 L440,62 Q450,61 450,72 V330 Z' },
-  { id: 'val', label: 'Val', base: 1350, textTop: 185, photoY: 172, half: 150, path: 'M150,330 V130 C190,30 310,150 450,60 V330 Z' },
-  { id: 'srce', label: 'Srce', base: 1500, textTop: 225, photoY: 155, half: 160, path: 'M230,330 C170,280 128,215 140,140 C150,76 232,60 300,128 C368,60 450,76 460,140 C472,215 430,280 370,330 Z' },
-  { id: 'dvostruki', label: 'Dvostruki luk', base: 1900, textTop: 230, photoY: 150, half: 190, path: 'M110,330 V150 Q110,80 190,80 Q262,80 300,126 Q338,80 410,80 Q490,80 490,150 V330 Z' },
+  { id: 'klasik', label: 'Klasični', textTop: 165, photoY: 153, half: 150, path: 'M150,330 V110 Q150,60 200,60 H400 Q450,60 450,110 V330 Z' },
+  { id: 'luk', label: 'Polukružni', textTop: 185, photoY: 170, half: 150, path: 'M150,330 V200 A150,140 0 0 1 450,200 V330 Z' },
+  { id: 'kosi', label: 'Kosi', textTop: 175, photoY: 162, half: 150, path: 'M150,330 V130 Q150,100 180,96 L440,62 Q450,61 450,72 V330 Z' },
+  { id: 'val', label: 'Val', textTop: 185, photoY: 172, half: 150, path: 'M150,330 V130 C190,30 310,150 450,60 V330 Z' },
+  { id: 'srce', label: 'Srce', textTop: 225, photoY: 155, half: 160, path: 'M230,330 C170,280 128,215 140,140 C150,76 232,60 300,128 C368,60 450,76 460,140 C472,215 430,280 370,330 Z' },
+  { id: 'dvostruki', label: 'Dvostruki luk', textTop: 230, photoY: 150, half: 190, path: 'M110,330 V150 Q110,80 190,80 Q262,80 300,126 Q338,80 410,80 Q490,80 490,150 V330 Z' },
 ]
 
 /* ---------- catalogues of parts ---------- */
 
 export type DecorId = 'kriz' | 'pravoslavni' | 'ruza' | 'golubica' | 'andjeo'
-export const DECORS: { id: DecorId; label: string; price: number }[] = [
-  { id: 'kriz', label: 'Križ', price: 60 },
-  { id: 'pravoslavni', label: 'Pravoslavni križ', price: 60 },
-  { id: 'ruza', label: 'Klesana ruža', price: 180 },
-  { id: 'golubica', label: 'Golubica', price: 150 },
-  { id: 'andjeo', label: 'Anđeo (gravura)', price: 220 },
+export const DECORS: { id: DecorId; label: string }[] = [
+  { id: 'kriz', label: 'Križ' },
+  { id: 'pravoslavni', label: 'Pravoslavni križ' },
+  { id: 'ruza', label: 'Klesana ruža' },
+  { id: 'golubica', label: 'Golubica' },
+  { id: 'andjeo', label: 'Anđeo (gravura)' },
 ]
 
 export type FigureId = 'andjeo3d' | 'gospa' | 'kriz3d' | 'knjiga'
-export const FIGURES: { id: FigureId; label: string; price: number }[] = [
-  { id: 'andjeo3d', label: 'Anđeo (skulptura)', price: 450 },
-  { id: 'gospa', label: 'Gospa (skulptura)', price: 420 },
-  { id: 'kriz3d', label: 'Stojeći križ', price: 260 },
-  { id: 'knjiga', label: 'Otvorena knjiga', price: 240 },
+export const FIGURES: { id: FigureId; label: string }[] = [
+  { id: 'andjeo3d', label: 'Anđeo (skulptura)' },
+  { id: 'gospa', label: 'Gospa (skulptura)' },
+  { id: 'kriz3d', label: 'Stojeći križ' },
+  { id: 'knjiga', label: 'Otvorena knjiga' },
 ]
 
 export type VaseId = 'klasicna' | 'visoka' | 'kvadratna'
-export const VASES: { id: VaseId; label: string; price: number }[] = [
-  { id: 'klasicna', label: 'Klasična vaza', price: 120 },
-  { id: 'visoka', label: 'Visoka vaza', price: 140 },
-  { id: 'kvadratna', label: 'Kvadratna žardinjera', price: 150 },
+export const VASES: { id: VaseId; label: string }[] = [
+  { id: 'klasicna', label: 'Klasična vaza' },
+  { id: 'visoka', label: 'Visoka vaza' },
+  { id: 'kvadratna', label: 'Kvadratna žardinjera' },
 ]
 
 export type LanternId = 'klasicni' | 'moderni'
-export const LANTERNS: { id: LanternId; label: string; price: number }[] = [
-  { id: 'klasicni', label: 'Klasični lampion', price: 160 },
-  { id: 'moderni', label: 'Moderni lampion', price: 180 },
+export const LANTERNS: { id: LanternId; label: string }[] = [
+  { id: 'klasicni', label: 'Klasični lampion' },
+  { id: 'moderni', label: 'Moderni lampion' },
 ]
 
 export const FONTS = [
@@ -178,17 +177,5 @@ export function elemLabel(el: Elem): string {
     case 'vase': return VASES.find((d) => d.id === el.variant)!.label
     case 'lantern': return LANTERNS.find((d) => d.id === el.variant)!.label
     case 'stroke': return 'Docrtana linija'
-  }
-}
-
-export function elemPrice(el: Elem): number {
-  switch (el.kind) {
-    case 'text': return 0
-    case 'photo': return 90
-    case 'decor': return DECORS.find((d) => d.id === el.decor)!.price
-    case 'figure': return FIGURES.find((d) => d.id === el.figure)!.price
-    case 'vase': return VASES.find((d) => d.id === el.variant)!.price
-    case 'lantern': return LANTERNS.find((d) => d.id === el.variant)!.price
-    case 'stroke': return 0
   }
 }
